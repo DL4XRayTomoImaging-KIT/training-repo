@@ -1,0 +1,9 @@
+# @package _group_
+targets: /mnt/data/machine-learning/medliver_processing/mixed_labels/good/{}.nrrd
+volumes: /mnt/HD-LSDF/Medaka/segmentations/eye_segmentation_data/medakas/2018_11_downscaled/{}.tif
+crop_size: 256
+use_cache: True
+fix_random_state: True 
+get_first_k: null
+mode_3d: False
+aug_name: medium_aug_rot

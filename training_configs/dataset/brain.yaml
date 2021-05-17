@@ -1,0 +1,9 @@
+# @package _group_
+targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/corrected_brains/{}.nii
+volumes: /mnt/HD-LSDF/Medaka/segmentations/eye_segmentation_data/medakas/workshop_markup/proper_images/{}.tif
+crop_size: 256
+use_cache: True
+fix_random_state: True 
+get_first_k: null
+aug_name: medium_aug_rot
+mode_3d: False
