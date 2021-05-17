@@ -6,6 +6,34 @@ from torch import nn
 from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock
 from einops import rearrange
 
+class EUnet(Unet):
+    def __init__(self, *args, embedding_depth=512, nonlinear_heads=False, metric_head=False, **kwargs):
+        real_classes = kwargs['classes']
+        kwargs['classes'] = embedding_depth
+        super().__init__(*args, **kwargs)
+        if nonlinear_heads:
+            self.classification_head = nn.Sequential(nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1), 
+                                                     nn.ReLU(), 
+                                                     nn.Conv2d(in_channels=embedding_depth, out_channels=real_classes, kernel_size=1))
+        else:
+            self.classification_head = nn.Conv2d(in_channels=embedding_depth, out_channels=real_classes, kernel_size=1)
+        if metric_head:
+            if nonlinear_heads:
+                self.metric_head = nn.Sequential(nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1), 
+                                                 nn.ReLU(), 
+                                                 nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1))
+            else:
+                self.metric_head = nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1)
+        else:
+            self.metric_head = lambda x: x
+    
+    def forward(self, *args, **kwargs):
+        e, b_ = super().forward(*args, **kwargs)
+        c = self.classification_head(e)
+        m = self.metric_head(e)
+        
+        return m, c
+
 def get_recommended_batch_size(parameters_count, image_side):
     base_batch_size = 1
     base_batch_size *= int((512/image_side)**2) # correction for the crop size

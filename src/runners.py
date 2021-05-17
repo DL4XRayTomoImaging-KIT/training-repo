@@ -23,3 +23,25 @@ def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
         ious.append(iou)
     ious = [np.mean(iou) for iou in zip(*ious)] # mean accross images if per_image
     return 100 * np.array(ious)
+
+class ConCorDRunner(Runner):
+    def _handle_batch(self, batch):
+        imgs, kps, poss, msks = batch
+        kps = [i.detach().cpu().numpy() for i in kps]
+        poss = [i.detach().cpu().numpy() for i in poss]
+
+        embeds, classes = self.model(imgs)
+
+        loss, printables = self.criterion(embeds, kps, poss, classes, msks)
+        ious = iou(torch.argmax(classes, 1), msks[:, 0], [1, 3, 4, 5, 6])
+
+        self.batch_metrics.update({'loss': loss.item()})
+        self.batch_metrics.update(printables)
+        if 'seg_loss' in printables.keys():
+            self.batch_metrics.update({'mean-iou': ious.mean()})
+            self.batch_metrics.update({f'iou-{i}': int(ious[i])+1 for i in range(len(ious))})
+    
+        if self.is_train_loader:
+            loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()

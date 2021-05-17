@@ -1,0 +1,7 @@
+# @package _group_
+network_type: EUnet
+encoder_name: resnet18
+classes: 7
+in_channels: 1
+# nonlinear_heads: True
+# metric_head: True

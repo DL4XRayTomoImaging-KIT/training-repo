@@ -1,0 +1,24 @@
+# @package _group_
+data_gatherer_name: semi_supervised_segmentation_target_matcher
+data_gatherer_kwargs:
+  supervised_targets: /mnt/data/machine-learning/workshop_markup/workshop_markup/eyes_to_train/{}.nii
+  supervised_volumes: /mnt/data/machine-learning/workshop_markup/workshop_markup/proper_images/{}.tif
+  unsupervised_volumes: /mnt/data/machine-learning/medaka_cropped/2018_11_cropped/{}.tif
+train_test_split_function: semi_supervised_train_test_split
+random_state: 42
+train_test_split_kwargs:
+  supervised_volumes_limit: 5
+  unsupervised_volumes_limit: 0
+  unsupervised_test_part: True
+aug_name: low_aug_bbx
+dataset_function_name: get_DLD_datasets
+dataset_kwargs:
+  # crop_size: 256
+  label_converter: {'0': 0, '1': 1, '2': 1, '3': 0, '4': 0, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6} # legacy conversion, keeped for compatibility
+dataset_rebalance_function_name: resample_concatenated_DLD
+collate_fn_name: partial_collate
+sampler_function_name: ChunkedBatchIdSampler
+sampler_function_kwargs:
+  batch_size: 32  
+dataloader_kwargs:
+  num_workers: 32
