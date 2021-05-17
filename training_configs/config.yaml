@@ -4,21 +4,17 @@ dataset:
 optimizer:
     lr: 3e-4
 criterion:
-    criterion_name: ConCorD25D
-    criterion_hyper_parameters:
-        localisation_kwargs: {triplets_count: 1024}
+    criterion_name: CrossentropyND
 logger:
     project_name: fish-eye
     experiment_name: null 
-# callbacks: 
-    # - {'name': 'iou_callbacks', 'kwargs': {'classes': [1, 3, 4, 5, 6]}}
-    # - {'name': 'mean_iou_callback'}
-    # - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric': 'mean-iou', 'minimize': False}}
-runner: 
-    runner_name: ConCorDRunner
+callbacks: 
+    - {'name': 'iou_callbacks', 'kwargs': {'classes': [1, 3, 4, 5, 6]}}
+    - {'name': 'mean_iou_callback'}
+    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric': 'mean-iou', 'minimize': False}}
 training:
     verbose: True
-    num_epochs: 200
+    num_epochs: 10
     logdir: ./logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
