@@ -9,6 +9,7 @@ Probably, at some point core trainer could be moved from Catalyst to, say, Fast.
 But for now let roll on with what we have.
 
 To check the work of the initial setup one can run
-```bash
+```shell
 nice -n 5 python train.py +dataset=eyes +model=eyes
 ```
+which should train segmentation model for medaka eyes for 10 epochs.
