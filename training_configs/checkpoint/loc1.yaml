@@ -1,0 +1,5 @@
+# @package _group_
+checkpoint_addr: '/home/ws/tb0536/projects/medaka-supervised/artifacts/localisator.pth'
+checkpoint_key: 'model_state_dict'
+load_function: 'partial_load'
+model_key: 'encoder'

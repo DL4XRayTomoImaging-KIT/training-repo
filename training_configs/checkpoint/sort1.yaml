@@ -1,0 +1,5 @@
+# @package _group_
+checkpoint_addr: '/mnt/data/machine-learning/logs/sorting-logger/2021-03-16_19-18-53/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'
+load_function: 'partial_load'
+model_key: 'encoder'
