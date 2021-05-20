@@ -43,6 +43,14 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
                                              **kwargs))
     return ConcatDataset(datasets)
 
+def adaptive_choice(choose_from, choice_count):
+    if choice_count <= len(choose_from):
+        return np.random.choice(choose_from, choice_count, replace=False)
+    else:
+        subsample = [choose_from]*(choice_count//len(choose_from)) # all the full inclusions first
+        subsample.append(np.random.choice(choose_from, choice_count%len(choose_from), replace=False)) # additional records
+        return np.concatenate(subsample)
+    
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
 
@@ -56,8 +64,8 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     elif empty_part is None:
         empty_part = (1-is_marked).sum()
 
-    segmented_subsample = np.random.choice(np.where(is_marked)[0], segmented_part, replace=False)
-    empty_subsample = np.random.choice(np.where(1-is_marked)[0], empty_part, replace=False)
+    segmented_subsample = adaptive_choice(np.where(is_marked)[0], segmented_part)
+    empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
 
     return Subset(dataset, np.concatenate([segmented_subsample, empty_subsample]))
 
