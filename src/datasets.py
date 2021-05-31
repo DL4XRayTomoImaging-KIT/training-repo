@@ -7,6 +7,7 @@ from medpy.io import load as medload
 from glob import glob
 import os
 import tifffile
+import albumentations as A
 
 
 class ChunkedBatchIdSampler:
@@ -66,6 +67,55 @@ class DenseLocalisationDataset(Dataset):
         kpl = np.array(rst['position'])
         
         return rst['image'][None,...], kp, kpl, rst['mask'][None,...]
+
+class ConrsativeSegmentationDataset(Dataset):
+    def __init__(self, volume, augmentation, mask=None, checkpoint_count=256, crop_size=256):
+        self.volume = volume
+        self.mask = mask
+        
+        self.augmentation = augmentation
+        self.checkpoint_count = checkpoint_count
+
+        self.cropper = A.RandomCrop(width=crop_size, height=crop_size)
+
+    def _match_keyopints(self, keypoints1, ids1, keypoints2, ids2):
+        matched_ids = list(set(ids1[:, 0]) & set(ids2[:, 0]))
+        ids1 = [np.where(ids1==i)[0][0] for i in matched_ids]
+        ids2 = [np.where(ids2==i)[0][0] for i in matched_ids]
+
+        return keypoints1[ids1], keypoints2[ids2]
+    
+    def __len__(self):
+        return len(self.volume)
+    
+    def __getitem__(self, id):
+        img = self.volume[id]
+
+        if self.mask is not None:
+            mask = self.mask[id]
+        else:
+            mask = np.ones_like(img, dtype=np.uint8)*255
+
+        crpt = self.cropper(image=img, mask=mask)
+        img = crpt['image']
+        mask = crpt['mask']
+
+        kp = np.stack([np.random.randint(0, img.shape[1], self.checkpoint_count), 
+                               np.random.randint(0, img.shape[0], self.checkpoint_count)], -1)
+        kpl = np.arange(0, self.checkpoint_count)[:, None]
+        
+        view1 = self.augmentation(image=img, keypoints=kp, position=kpl, mask=mask)
+        view2 = self.augmentation(image=img, keypoints=kp, position=kpl, mask=mask)
+
+        img = np.stack([view1['image'], view2['image']])
+        
+        kp = np.stack(self._match_keyopints(np.array(view1['keypoints']),
+                                            np.array(view1['position']), 
+                                            np.array(view2['keypoints']), 
+                                            np.array(view2['position'])))
+        msk = np.stack([view1['mask'], view2['mask']])
+
+        return img, kp, kpl, msk
 
 def partial_collate(samples):
     imgs, kps, poss, msks = zip(*samples)
@@ -155,6 +205,27 @@ def get_DLD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
             label = None
         
         datasets.append(DenseLocalisationDataset(image, augmentation=aug, mask=label, **kwargs))
+    return ConcatDataset(datasets)
+
+def get_CSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
+    datasets = []
+    for addr_batch in data_addresses:
+        if isinstance(addr_batch, tuple) and len(addr_batch) == 2:
+            image_addr = addr_batch[0]
+            image = tifffile.imread(image_addr)
+            label_addr = addr_batch[1]
+            if label_converter is not None:
+                label = convert_target(label_addr, label_converter)
+            else:
+                label = medload(label_addr)[0]
+        else:
+            if isinstance(addr_batch, tuple):
+                addr_batch = addr_batch[0]
+            image_addr = addr_batch
+            image = tifffile.imread(image_addr)
+            label = None
+        
+        datasets.append(ConrsativeSegmentationDataset(image, augmentation=aug, mask=label, **kwargs))
     return ConcatDataset(datasets)
 
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):

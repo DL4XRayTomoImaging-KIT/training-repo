@@ -1,6 +1,7 @@
 from catalyst.dl.runner import *
 import numpy as np
 import torch
+from einops import rearrange
 
 def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
     """
@@ -40,6 +41,32 @@ class ConCorDRunner(Runner):
         if 'seg_loss' in printables.keys():
             self.batch_metrics.update({'mean-iou': ious.mean()})
             self.batch_metrics.update({f'iou-{i}': int(ious[i])+1 for i in range(len(ious))})
+    
+        if self.is_train_loader:
+            loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
+
+
+class PointVICRegRunner(Runner):
+    def _handle_batch(self, batch):
+        imgs, kps, poss, msks = batch
+        imgs = rearrange(imgs, 'b c h w -> (b c) 1 h w')
+
+        embeds, classes = self.model(imgs)
+        embeds = rearrange(embeds, '(b l) c h w -> l b c h w', l=2)
+
+        kps = [i.detach().cpu().numpy() for i in kps]
+    
+        loss = self.criterion(embeds, kps)
+        printables = {}
+        # ious = iou(torch.argmax(classes, 1), msks[:, 0], [1, 3, 4, 5, 6])
+
+        self.batch_metrics.update({'loss': loss.item()})
+        self.batch_metrics.update(printables)
+        # if 'seg_loss' in printables.keys():
+            # self.batch_metrics.update({'mean-iou': ious.mean()})
+            # self.batch_metrics.update({f'iou-{i}': int(ious[i])+1 for i in range(len(ious))})
     
         if self.is_train_loader:
             loss.backward()
