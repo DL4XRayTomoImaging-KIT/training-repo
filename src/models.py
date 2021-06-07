@@ -166,9 +166,11 @@ class EUnet(Unet):
             self.classification_head = nn.Conv2d(in_channels=embedding_depth, out_channels=real_classes, kernel_size=1)
         if metric_head:
             if nonlinear_heads:
-                self.metric_head = nn.Sequential(nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1), 
-                                                 nn.ReLU(), 
-                                                 nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1))
+                self.metric_head = nn.Sequential(nn.Conv2d(in_channels=embedding_depth, out_channels=2048, kernel_size=1), 
+                                                 nn.BatchNorm2d(2048), nn.ReLU(), 
+                                                 nn.Conv2d(in_channels=2048, out_channels=2048, kernel_size=1),
+                                                 nn.BatchNorm2d(2048), nn.ReLU(),
+                                                 nn.Conv2d(in_channels=2048, out_channels=2048, kernel_size=1))
             else:
                 self.metric_head = nn.Conv2d(in_channels=embedding_depth, out_channels=embedding_depth, kernel_size=1)
         else:
