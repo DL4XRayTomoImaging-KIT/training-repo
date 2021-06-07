@@ -7,7 +7,7 @@ data_gatherer_kwargs:
 train_test_split_function: semi_supervised_train_test_split
 random_state: 42
 train_test_split_kwargs:
-  supervised_volumes_limit: 0
+  supervised_volumes_limit: 2
   unsupervised_volumes_limit: 20
   unsupervised_test_part: True
 aug_name: medium_aug_bbx
