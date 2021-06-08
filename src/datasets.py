@@ -1,5 +1,5 @@
 from torch.utils.data import ConcatDataset, DataLoader, Dataset, Subset
-from TVSD import VolumeSlicingDataset
+from TVSD import VolumeSlicingDataset, ExpandedPaddedSegmentation
 from sklearn.model_selection import train_test_split
 import torch
 import numpy as np
@@ -12,9 +12,9 @@ def convert_target(addr, converter):
     if isinstance(list(converter.keys())[0], str):
         # this is because of the restrictions in the OmegaConf. Should be resolved with 2.1 version.
         converter = {int(k):v for k,v in converter.items()}
-    volume = medload(addr)[0]
-    volume = np.vectorize(converter.get)(volume)
-    return volume
+    markup = ExpandedPaddedSegmentation(addr)
+    markup.data = np.vectorize(converter.get)(markup.data)
+    return markup
 
 def supervised_segmentation_target_matcher(volumes, targets):
     label_ids = [os.path.basename(i).split('.')[-2] for i in glob(targets.format('*'))]
@@ -37,12 +37,20 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
         if label_converter is not None:
             label = convert_target(label_addr, label_converter)
         else:
-            label = medload(label_addr)[0]
+            label = ExpandedPaddedSegmentation(label_addr)
         
         datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
                                              **kwargs))
     return ConcatDataset(datasets)
 
+def adaptive_choice(choose_from, choice_count):
+    if choice_count <= len(choose_from):
+        return np.random.choice(choose_from, choice_count, replace=False)
+    else:
+        subsample = [choose_from]*(choice_count//len(choose_from)) # all the full inclusions first
+        subsample.append(np.random.choice(choose_from, choice_count%len(choose_from), replace=False)) # additional records
+        return np.concatenate(subsample)
+    
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
 
@@ -56,8 +64,7 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     elif empty_part is None:
         empty_part = (1-is_marked).sum()
 
-    segmented_subsample = np.random.choice(np.where(is_marked)[0], segmented_part, replace=False)
-    empty_subsample = np.random.choice(np.where(1-is_marked)[0], empty_part, replace=False)
+    segmented_subsample = adaptive_choice(np.where(is_marked)[0], segmented_part)
+    empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
 
     return Subset(dataset, np.concatenate([segmented_subsample, empty_subsample]))
-
