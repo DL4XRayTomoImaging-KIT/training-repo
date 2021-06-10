@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  main_addr: '/mnt/data/machine-learning/medakas/proper_images'
+destination:
+  prefix: 'segmented'
