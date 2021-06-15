@@ -44,7 +44,7 @@ def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=Non
 
 def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, n_procs=1, **kwargs):
 
-    def _process_onevolume(image_addr, label_addr, aug=None, label_converter=None, **kwargs):
+    def _process_onevolume(image_addr, label_addr, aug, label_converter, **kwargs):
         if label_converter is not None:
             label = convert_target(label_addr, label_converter)
         else:
@@ -52,6 +52,7 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, n_procs=1,
 
         one_volume = VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug, **kwargs)
         one_volume.task = name[0] if (name := image_addr.split('/')[-3]) != 'origin' else image_addr.split('/')[-4][0]
+        one_volume.name = image_addr[len('/mnt/data/machine-learning/arina/mots/'):]
         return one_volume
 
     datasets = Parallel(n_jobs=n_procs, verbose=5)(delayed(_process_onevolume)
