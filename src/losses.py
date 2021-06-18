@@ -145,6 +145,11 @@ class ContrastiveLoss:
         return qs
 
     def sample_negatives(self, neg):
+        """
+        Select self.n_negatives negative examples
+        :param neg: Tuple(torch.FloatTensor[2 * b_sz, ?], torch.FloatTensor[2 * b_sz, ?])
+        :return: torch.FloatTensor[2 * b_sz, self.n_negatives]
+        """
         target_negatives, background_negatives = neg
         negatives = torch.cat((target_negatives, background_negatives))[: self.n_negatives]
         return negatives
