@@ -1,15 +1,16 @@
 from segmenetation_losses_pytorch import *
+from torch.nn.functional import normalize
 from torch import nn
 import math
 
 
-class ContrastiveLoss:
+class ContrastiveLoss(nn.Module):
     def __init__(self, device, n_negatives, n_tasks, background_share=0.1, temperature=0.07):
         """
         Contrastive loss for Semantic Segmetation implementation, based on https://arxiv.org/pdf/2102.06191.pdf
         :param device: torch.device, device of the data and model
         :param n_negatives: int, number of negatives found for each example
-        :param n_tasks: int, number of classes for segmentation
+        :param n_tasks: int, number of classes for segmentation (includes both organs and tumors)
         :param temperature: float, temperature value for the exponent
         """
         super().__init__()
@@ -19,11 +20,11 @@ class ContrastiveLoss:
         self.n_background = math.ceil(n_negatives * background_share)
         self.n_task = n_negatives - self.n_background
 
-        self.task_list = torch.arange(n_tasks).unsqueeze(1)  # .to(device)
+        self.task_list = torch.arange(n_tasks * 2).unsqueeze(1)  # .to(device)
         self.one = torch.Tensor([1.]).to(device)
         self.device = device
 
-    def __call__(self, features, labels, tasks):
+    def forward(self, features, labels, tasks):
         """
         Calclulate contrastive loss for d-dimentional representations of clusters
         :param features: torch.FloatTensor[b_sz, d, h, w], segmentation feature map
@@ -46,7 +47,7 @@ class ContrastiveLoss:
                                                                    repr_targets, repr_backgrounds)
 
         # only calculate loss for non empty masks
-        filter_ids = torch.arange(2 * batch_size)[label_mask.squeeze()]
+        filter_ids = torch.arange(2 * batch_size)[label_mask.squeeze(0)]
         features = repr_targets[filter_ids].unsqueeze(-1)
 
         pos_logits = torch.matmul(positives, features).squeeze(-1)
@@ -71,7 +72,7 @@ class ContrastiveLoss:
 
         d = repr_vectors.size(-1)
         repr_vectors = repr_vectors.view(-1, d)
-        repr_vectors = self.normalize(repr_vectors)
+        repr_vectors = normalize(repr_vectors)
         return repr_vectors
 
     def gather_negatives_and_positives(self, tasks, label_mask, repr_targets, repr_backgrounds):
@@ -92,7 +93,7 @@ class ContrastiveLoss:
         task_ids[:, ::2] = 2 * tasks  # organs
         task_ids[:, 1::2] = 2 * tasks + 1  # tumors
 
-        loss_calc_idx = task_ids[label_mask].squeeze()
+        loss_calc_idx = task_ids[label_mask].squeeze(0)
 
         # [self.n_tasks, batch_size * 2] for each task, all items that are not of the same task and non-empty
         cooc_other = (self.task_list != task_ids) * label_mask
@@ -109,7 +110,7 @@ class ContrastiveLoss:
         target_negatives = [repr_targets[target_index] for target_index in target_idx_neg]
         background_negatives = [repr_backgrounds[background_index] for background_index in background_idx_neg]
 
-        positives = torch.stack(tuple(repr_targets[target_index][0] for target_index in target_idx_pos)).unsqueeze(1)
+        positives = torch.stack(tuple(repr_targets[target_index][:1] for target_index in target_idx_pos))
 
         negatives = tuple(map(self.sample_negatives, zip(target_negatives, background_negatives)))
         negatives = torch.stack(negatives)
@@ -129,38 +130,18 @@ class ContrastiveLoss:
         neg_logits_max = torch.max(neg_logits, dim=1, keepdim=True)[0].detach()
         neg_logits -= neg_logits_max
         pos_logits -= neg_logits_max
-        loss = (torch.log(torch.exp(neg_logits).sum(dim=1)) - pos_logits.squeeze()).mean()
+        loss = (torch.log(torch.exp(neg_logits).sum(dim=1)) - pos_logits.squeeze(1)).mean()
         return loss
-
-    def normalize(self, qs):
-        """
-        Project qs to an d-dim normalized hypersphere
-        :param qs: torch.FloatTensor[bs, d] vectors to be normalized
-        :return: torch.FloatTensor[bs, d] normalized qs
-        """
-
-        qn = torch.norm(qs, p=2, dim=1, keepdim=True).detach()  # needed here?
-        qn = torch.where(qn > 0, qn, torch.ones_like(qn))  # if norm is 0, devide by 1.
-        qs /= qn
-        return qs
 
     def sample_negatives(self, neg):
         """
         Select self.n_negatives negative examples
-        :param neg: Tuple(torch.FloatTensor[2 * b_sz, ?], torch.FloatTensor[2 * b_sz, ?])
-        :return: torch.FloatTensor[2 * b_sz, self.n_negatives]
+        :param neg: Tuple(torch.FloatTensor[1, n_target_negatives], torch.FloatTensor[1, n_background_negatives])
+                    Note: n_target_negatives and n_background_negatives are not fixed!
+        :return: torch.FloatTensor[1, self.n_negatives]
         """
         target_negatives, background_negatives = neg
-        negatives = torch.cat((target_negatives, background_negatives))[: self.n_negatives]
+        all_negatives = torch.cat((target_negatives, background_negatives))
+        idx = torch.randperm(all_negatives.size(1))[: self.n_negatives]
+        negatives = all_negatives[idx]
         return negatives
-
-    '''
-    def sample_negatives(self, neg):
-        target_negatives, background_negatives = neg
-        weights_target = torch.ones((len(target_negatives))) / target_negatives.size(0)
-        weights_background = torch.ones((len(background_negatives))) / background_negatives.size(0)
-        target_idx = torch.multinomial(weights_target, self.n_task)
-        background_idx = torch.multinomial(weights_background, self.n_background)
-        negatives = torch.cat((target_negatives[target_idx], background_negatives[background_idx]))
-        return negatives
-    '''
