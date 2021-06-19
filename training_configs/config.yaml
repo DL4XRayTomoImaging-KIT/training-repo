@@ -2,29 +2,43 @@ model:
 checkpoint:
 dataset:
 optimizer:
-    lr: 3e-4
+    lr: 4e-4
+    momentum: 0.9
+    weight_decay: 1e-4
+scheduler:
+    T_max: 200
 criterion:
-    criterion_name: CrossentropyND
+    criterion_name: ContrastiveLoss
+    criterion_hyper_parameters:
+        device: cuda:0
+        n_negatives: 32
+        n_tasks: 10
 logger:
-    project_name: fish-eye
-    experiment_name: null 
-callbacks: 
-    - {'name': 'iou_callbacks', 'kwargs': {'classes': [1, 3, 4, 5, 6]}}
-    - {'name': 'mean_iou_callback'}
-    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric': 'mean-iou', 'minimize': False}}
+    project_name: unsupervised-segmentation
+    experiment_name: null
+    log_on_batch_end: True
+callbacks:
+    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 10}}
+    - {'name': 'CheckpointCallback', 'kwargs': {'save_n_best': 2}}
+    - {'name': 'OptimizerCallback', 'kwargs': {'metric_key': 'loss'}}
+    - {'name': 'SchedulerCallback', 'kwargs': {'reduced_metric': 'loss'}}
+runner:
+    runner_name: SelfSuperRunner
 training:
     verbose: True
-    num_epochs: 10
-    logdir: ./logdir
+    num_epochs: 25
+    logdir: /home/ws/yy1833/training-repo/logs/logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:
     run:
         # Output directory for normal runs
-        dir: /mnt/data/machine-learning/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+        dir: /mnt/data/machine-learning/arina/logs/mots/${now:%Y-%m-%d_%H-%M-%S}
     sweep:
        # Output directory for sweep runs
-       dir: /mnt/data/machine-learning/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+       dir: /mnt/data/machine-learning/arina/logs/mots/${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
+
+
 
