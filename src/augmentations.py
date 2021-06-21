@@ -7,8 +7,7 @@ from albumentations import Compose as AlbuCompose
 
 crop_in_mask = AlbuCompose([CropNonEmptyMaskIfExists(280, 149)])
 
-strong_aug = AlbuCompose([CropNonEmptyMaskIfExists(280, 149),
-                          HorizontalFlip(p=0.1),
+strong_aug = AlbuCompose([HorizontalFlip(p=0.1),
                           VerticalFlip(p=0.1),
                           GaussNoise(var_limit=(0, 0.1), p=0.1),
                           GaussianBlur(sigma_limit=(0.5, 1.), p=0.2),
