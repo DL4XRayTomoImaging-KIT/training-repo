@@ -5,7 +5,7 @@ import math
 
 
 class ContrastiveLoss(nn.Module):
-    def __init__(self, device, n_negatives, n_tasks, background_share=0.1, temperature=0.07):
+    def __init__(self, n_negatives, n_tasks, background_share=0.1, temperature=0.07):
         """
         Contrastive loss for Semantic Segmetation implementation, based on https://arxiv.org/pdf/2102.06191.pdf
         :param device: torch.device, device of the data and model
@@ -20,9 +20,7 @@ class ContrastiveLoss(nn.Module):
         self.n_background = math.ceil(n_negatives * background_share)
         self.n_task = n_negatives - self.n_background
 
-        self.task_list = torch.arange(n_tasks * 2).unsqueeze(1)  # .to(device)
-        self.one = torch.Tensor([1.]).to(device)
-        self.device = device
+        self.task_list = torch.arange(n_tasks * 2).unsqueeze(1)
 
     def forward(self, features, labels, tasks):
         """
@@ -56,7 +54,8 @@ class ContrastiveLoss(nn.Module):
         loss = self.logits_to_loss(pos_logits, neg_logits)
         return loss
 
-    def prepare_reprs(self, features, labels):
+    @staticmethod
+    def prepare_reprs(features, labels):
         """
         Calculate normalized d-dimentional representations for organs, tumors or backgrounds
         :param features: torch.FloatTensor[b_sz, d, h, w], segmentation feature map
@@ -67,7 +66,8 @@ class ContrastiveLoss(nn.Module):
         masked = features * labels
         repr_vectors = masked.sum(dim=(-1, -2))
         # if labels sum is 0, mean is also 0
-        cnt = torch.maximum(labels.sum(dim=(-1, -2)), self.one)
+        one = torch.tensor([1.]).to(device=labels.device)
+        cnt = torch.maximum(labels.sum(dim=(-1, -2)), one)
         repr_vectors /= cnt
 
         d = repr_vectors.size(-1)
@@ -110,7 +110,7 @@ class ContrastiveLoss(nn.Module):
         target_negatives = [repr_targets[target_index] for target_index in target_idx_neg]
         background_negatives = [repr_backgrounds[background_index] for background_index in background_idx_neg]
 
-        positives = torch.stack(tuple(repr_targets[target_index][:1] for target_index in target_idx_pos))
+        positives = torch.stack(tuple(repr_targets[t_i][:1] for t_i in target_idx_pos))
 
         negatives = tuple(map(self.sample_negatives, zip(target_negatives, background_negatives)))
         negatives = torch.stack(negatives)
