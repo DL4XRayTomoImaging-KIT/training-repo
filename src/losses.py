@@ -1,5 +1,6 @@
 from segmenetation_losses_pytorch import *
 from torch.nn.functional import normalize
+from torch.nn import BCEWithLogitsLoss
 from torch import nn
 import math
 
@@ -34,28 +35,27 @@ class ContrastiveLoss(nn.Module):
         """
         batch_size = features.size(0)
 
-        features, labels = features.unsqueeze(1), labels.unsqueeze(2)
+        repr_targets, labels = self.prepare_reprs(features, labels)
+        repr_backgrounds, _ = self.prepare_reprs(features, 1 - labels)
+
         # is label non empty
         label_mask = labels.sum(dim=(-1, -2)).view(-1, batch_size * 2).type(torch.bool).cpu()
-
-        repr_targets = self.prepare_reprs(features, labels)
-        repr_backgrounds = self.prepare_reprs(features, 1 - labels)
 
         negatives, positives = self.gather_negatives_and_positives(tasks, label_mask,
                                                                    repr_targets, repr_backgrounds)
 
         # only calculate loss for non empty masks
         filter_ids = torch.arange(2 * batch_size)[label_mask.squeeze(0)]
-        features = repr_targets[filter_ids].unsqueeze(-1)
+        repr_features = repr_targets[filter_ids].unsqueeze(-1)
 
-        pos_logits = torch.matmul(positives, features).squeeze(-1)
-        neg_logits = torch.matmul(negatives, features).squeeze(-1)
+        pos_logits = torch.matmul(positives, repr_features).squeeze(-1)
+        neg_logits = torch.matmul(negatives, repr_features).squeeze(-1)
 
         loss = self.logits_to_loss(pos_logits, neg_logits)
         return loss
 
     @staticmethod
-    def prepare_reprs(features, labels):
+    def prepare_reprs(features, labels, share=1.0):
         """
         Calculate normalized d-dimentional representations for organs, tumors or backgrounds
         :param features: torch.FloatTensor[b_sz, d, h, w], segmentation feature map
@@ -63,6 +63,13 @@ class ContrastiveLoss(nn.Module):
                 can be inverted for background representation
         :return: torch.FloatTensor[b_sz * 2, d] mean representation of the organs and tumors or their backgrounds
         """
+
+        batch_size, d, h, w = features.size()
+        features = torch.stack([features, features], dim=1).view(batch_size * 2, d, h, w)
+        labels = labels.view(batch_size * 2, h, w)
+        if share != 1.0:
+            labels = ContrastiveLoss.sample_labels(labels, features.size(), share)
+        labels = labels.unsqueeze(1)
         masked = features * labels
         repr_vectors = masked.sum(dim=(-1, -2))
         # if labels sum is 0, mean is also 0
@@ -73,7 +80,19 @@ class ContrastiveLoss(nn.Module):
         d = repr_vectors.size(-1)
         repr_vectors = repr_vectors.view(-1, d)
         repr_vectors = normalize(repr_vectors)
-        return repr_vectors
+        return repr_vectors, labels
+
+    @staticmethod
+    def sample_labels(labels, dims, share):
+        n_items, _, h, w = dims
+        labels = labels.view(n_items, -1)
+        label_idx = [np.random.choice(np.arange(h * w), size=int(share * s), p=lbl.cpu().numpy() / s)
+                     if (s := lbl.sum().item()) != 0 else np.array([]) for lbl in labels]
+        new_labels = torch.zeros_like(labels)
+        for i in range(n_items):
+            new_labels[i][label_idx[i]] = 1
+        new_labels = new_labels.view(n_items, h, w)
+        return new_labels
 
     def gather_negatives_and_positives(self, tasks, label_mask, repr_targets, repr_backgrounds):
         """
@@ -145,3 +164,7 @@ class ContrastiveLoss(nn.Module):
         idx = torch.randperm(all_negatives.size(1))[: self.n_negatives]
         negatives = all_negatives[idx]
         return negatives
+
+
+
+
