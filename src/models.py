@@ -2,15 +2,58 @@ from segmentation_models_pytorch import * # we need everything from the smp
 
 # now we define our own models
 import torch
-from torch import nn
+from torch import nn as nn
+
 from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock
 from einops import rearrange
+from torchvision.models import segmentation
 
-def get_recommended_batch_size(parameters_count, image_side):
-    base_batch_size = 1
-    base_batch_size *= int((512/image_side)**2) # correction for the crop size
-    base_batch_size *= max(torch.cuda.device_count(), 1) # correction for the devices count
-    base_batch_size = int(base_batch_size * (40_000_000 / parameters_count)) # correction for the model size
+
+class SegmentationModel(nn.Module):
+    def __init__(self, seg_model_name, in_channels=1, out_channels=32, n_tasks=6, head_hidden=128):
+        super().__init__()
+        seg_model = getattr(segmentation, seg_model_name)()
+        self.in_conv = nn.Conv2d(in_channels, 3, kernel_size=3, padding=1)
+        self.seg_model = seg_model
+        self.out_conv = nn.Conv2d(21, out_channels, kernel_size=1, padding=0)
+        self.heads = nn.ModuleList([BinaryHead(out_channels, head_hidden) for _ in range(n_tasks * 2)])
+
+    def forward(self, img):
+        img = self.in_conv(img)
+        img = self.seg_model(img)['out']
+        img = self.out_conv(img)
+        return img
+
+    @torch.no_grad()
+    def get_embeddings(self, img):
+        return self.forward(img)
+
+    def train_head(self, embedding, task):
+        preds = self.heads[task](embedding)
+        return preds
+
+    @torch.no_grad()
+    def predict_head(self, embedding):
+        preds = torch.stack([head(embedding) for head in self.heads])
+        return preds
+
+
+class BinaryHead(nn.Module):
+    def __init__(self, embedding_depth, hidden):
+        super().__init__()
+        self.head = nn.Sequential(
+            nn.Conv2d(in_channels=embedding_depth, out_channels=hidden, kernel_size=1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(in_channels=hidden, out_channels=1, kernel_size=1))
+
+    def forward(self, embedding):
+        x = self.head(embedding)
+        return x
+
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 
 def partial_load(model, state_dict, renew_parameters=None):
     mp = set(model.state_dict().keys())
