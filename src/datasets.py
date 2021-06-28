@@ -132,11 +132,9 @@ class TVSDTaskWrapper(Dataset):
         sample['mask'] = self.id2trainId(sample['mask'], task)
         return sample['image'], sample['mask'], task
 
-    def id2trainId(self, label, task_id):
-        if task_id in [0, 1, 3]:
-            organ = (label == 1)
-            tumor = (label == 2)
-        elif task_id == 2:
+    @staticmethod
+    def id2trainId(label, task_id):
+        if task_id <= 3:
             organ = (label == 1)
             tumor = (label == 2)
         elif task_id in [4, 5]:
@@ -157,8 +155,35 @@ class TVSDTaskWrapper(Dataset):
         return results_map
 
 
+class EmbeddingDataset(Dataset):
+    def __init__(self, data_paths, id):
+        super().__init__()
+        self.paths = data_paths
+        self.task_id = 2 * id if 'organ' in data_paths[0] else 2 * id + 1
+
+    def __getitem__(self, item):
+        path = self.paths[item]
+        with open(path, 'rb') as f:
+            img, lbl = torch.load(f)
+        return img, lbl, self.task_id
+
+    def __len__(self):
+        return len(self.paths)
+
+
 def TVSD_rebalance(dataset, upsample=2):
     tvsd_resampled_empty = TVSD_dataset_resample(dataset)
     resampled_tasks = TVSDTaskWrapper(tvsd_resampled_empty)
     balanced_tasks = TaskWrapper_balanced_resample(resampled_tasks, upsample=upsample)
     return balanced_tasks
+
+
+def TVSD_rebalance_neg(dataset):
+    tvsd_resampled_empty = TVSD_dataset_resample(dataset)
+    resampled_tasks = TVSDTaskWrapper(tvsd_resampled_empty)
+    return resampled_tasks
+
+
+def TVSD_no_rebalance(dataset):
+    resampled_tasks = TVSDTaskWrapper(Subset(dataset, torch.arange(len(dataset))))
+    return resampled_tasks
