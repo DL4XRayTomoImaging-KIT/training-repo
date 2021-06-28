@@ -2,13 +2,6 @@ import cv2
 cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)
 
-#from src.datasets import MultiTiffSegmentation, ExpandedPaddedMarkup, Tiff3D
-#from src.predefined_augmentations import light_aug
-
-#from src.lovasz_losses import lovasz_softmax, iou
-#
-#from src.segmenting_helpers import get_weighted_sampler_by_mark, get_weighted_sampler_by_sum
-
 from torch.utils.data import DataLoader
 
 import torch
@@ -148,7 +141,8 @@ def get_criterion(criterion_name, criterion_hyper_parameters=None):
 @cfg_ut('logger', 'initializing logger')
 def get_logger(project_name, log_cfg, experiment_name=None, log_on_batch_end=False):
     if project_name is not None:
-        wanlogger = WandbLogger(metric_names=None, project=project_name, name=experiment_name, config=log_cfg, log_on_batch_end=log_on_batch_end)
+        wanlogger = WandbLogger(metric_names=None, project=project_name, name=experiment_name, config=log_cfg,
+                                log_on_batch_end=log_on_batch_end)
         return wanlogger
 
 
