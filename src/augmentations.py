@@ -4,8 +4,10 @@ from albumentations.augmentations.transforms import CropNonEmptyMaskIfExists, \
     ToFloat, Downscale, Normalize
 from albumentations import Compose as AlbuCompose
 
-
 crop_in_mask = AlbuCompose([CropNonEmptyMaskIfExists(280, 149)])
+
+none_aug = AlbuCompose([Normalize(mean=np.array([0.3922]), std=np.array([0.2753]), always_apply=True),
+                        ToFloat(always_apply=True)])
 
 strong_aug = AlbuCompose([HorizontalFlip(p=0.1),
                           VerticalFlip(p=0.1),
