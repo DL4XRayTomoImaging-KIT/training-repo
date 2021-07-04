@@ -1,25 +1,34 @@
-from catalyst.dl.runner import *
-import numpy as np
+from catalyst import dl
 import torch
+import torch.nn.functional as F
 
-def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
-    """
-    Array of IoU for each (non ignored) class
-    """
-    if not per_image:
-        preds, labels = (preds,), (labels,)
-    ious = []
-    for pred, label in zip(preds, labels):
-        iou = []
-        ran = C if isinstance(C, list) else range(C)
-        for i in ran:
-            if i != ignore: # The ignored label is sometimes among predicted classes (ENet - CityScapes)
-                intersection = ((label == i) & (pred == i)).sum()
-                union = ((label == i) | ((pred == i) & (label != ignore))).sum()
-                if not union:
-                    iou.append(EMPTY)
-                else:
-                    iou.append(float(intersection) / float(union))
-        ious.append(iou)
-    ious = [np.mean(iou) for iou in zip(*ious)] # mean accross images if per_image
-    return 100 * np.array(ious)
+
+class SelfSuperRunner(dl.Runner):
+    def predict_batch(self, batch):
+        embeddings = self.model.module.get_embeddings(batch)
+        head_preds = self.model.module.predict_heads(embeddings)
+        return head_preds
+
+    def _handle_batch(self, batch):
+        img, labels, tasks = batch
+        features = self.model(img)
+        loss = self.criterion(features, labels, tasks)
+        self.batch_metrics.update(
+            {"loss": loss}
+        )
+
+
+class EmbeddingRunner(dl.Runner):
+    def _handle_batch(self, batch):
+        emb, labels, tasks = batch
+        d = emb.size(-1)
+        emb = emb.view(-1, d, 1, 1)
+        features = self.model.module.train_head(emb, tasks[0]).view(-1, 1)
+        labels = labels.view(-1, 1)
+        loss = self.criterion(features, labels)
+
+        self.batch_metrics.update({"loss": loss})
+        probs = F.sigmoid(features)
+        self.output = {"probs": probs, "preds": probs > 0.5}
+        self.input = {"probs": probs, "targets": labels}
+
