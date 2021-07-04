@@ -8,10 +8,18 @@ from src.augmentations import none_aug
 from flexpand import Expander
 import os
 import tifffile
+from medpy.io import load as medload
+from medpy.io import save as medsave
+import nibabel as nib
 
 import hydra
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
+
+from metrics import get_labels, postpocess, dice_score, compute_HD95
+
+val_Dice, val_HD, count = None, None, None
+
 
 # what to configure:
 # network loading config (this will share loading function with train)
@@ -19,16 +27,21 @@ from tqdm.auto import tqdm
 # processing parameters (batch size, activation function)
 # configuration for the postfix of file to save (what should we do if none provided, maybe required?)
 
+internal_medload = lambda addr: medload(addr)[0]
+
+
 class Segmenter:
     def __init__(self, model_config, checkpoint_config, processing_parameters):
         self.model = get_model(**model_config)
         load_weights(self.model, **checkpoint_config)
         self.model = nn.DataParallel(self.model)
         self.model.to(torch.device('cuda:0'))
+        self.model.eval()
 
         self.batch_size = processing_parameters['batch_size']
 
-        if ('activation_function' in processing_parameters) and (processing_parameters['activation_function'] is not None):
+        if ('activation_function' in processing_parameters) and (
+                processing_parameters['activation_function'] is not None):
             activation_function_name = processing_parameters['activation_function']
         else:
             activation_function_name = 'argmax'
@@ -38,66 +51,116 @@ class Segmenter:
             self.image_grain = processing_parameters['image_grain']
         else:
             self.image_grain = 32
-        
-        if ('dtype' in processing_parameters):
+
+        if 'dtype' in processing_parameters:
             self.output_dtype = processing_parameters['dtype']
         else:
             self.output_dtype = None
 
-
-    def process_one_volume(self, volume):
-        predictions = []
-        with torch.no_grad():
-            for b in range(int(np.ceil(len(volume)/ self.batch_size))):
-                batch = volume[self.batch_size*b : self.batch_size*(b+1)]
-                batch = batch[:, :batch.shape[1]//self.image_grain*self.image_grain, :batch.shape[2]//self.image_grain*self.image_grain]
-                batch = none_aug(image=batch)['image']
-                batch = torch.from_numpy(batch[:, None, ...])
-                batch = batch.to(torch.device('cuda:0'))
-                pred = self.activation_function(self.model(batch))
+    def process_one_volume(self, volume, tasks):
+        predictions = [[] for _ in tasks]
+        for b in range(int(np.ceil(len(volume) / self.batch_size))):
+            batch = volume[self.batch_size * b: self.batch_size * (b + 1)]
+            batch = batch[:, :batch.shape[1] // self.image_grain * self.image_grain,
+                    :batch.shape[2] // self.image_grain * self.image_grain]
+            batch = none_aug(image=batch)['image']
+            batch = torch.from_numpy(batch[:, None, ...])
+            batch = batch.to(torch.device('cuda:0'))
+            embedding = self.model.module.get_embeddings(batch)
+            for i, task in enumerate(tasks):
+                pred = self.model.module.predict_head(embedding, task)
+                pred = self.activation_function(pred)
                 pred = pred.detach().cpu().numpy()
-                predictions.append(pred)
-        predictions = np.concatenate(predictions)
-        if predictions.ndim == 4:
-            predictions = np.pad(predictions, ((0, 0), (0, 0), (0, volume.shape[1]-predictions.shape[2]), (0, volume.shape[2]-predictions.shape[3])))
-        elif predictions.ndim == 3:
-            predictions = np.pad(predictions, ((0, 0), (0, volume.shape[1]-predictions.shape[1]), (0, volume.shape[2]-predictions.shape[2])))
+                predictions[i].append(pred)
 
-        if self.output_dtype is not None:
-            predictions = predictions.astype(self.output_dtype)
+        for i in range(len(tasks)):
+            full_pred = np.concatenate(predictions[i])
+            if full_pred.ndim == 4:
+                predictions[i] = np.pad(full_pred, ((0, 0), (0, 0), (0, volume.shape[1] - full_pred.shape[2]),
+                                                   (0, volume.shape[2] - full_pred.shape[3])))
+            elif full_pred.ndim == 3:
+                predictions[i] = np.pad(full_pred, (
+                    (0, 0), (0, volume.shape[1] - full_pred.shape[1]), (0, volume.shape[2] - full_pred.shape[2])))
 
+            if self.output_dtype is not None:
+                predictions[i] = predictions[i].astype(self.output_dtype)
         return predictions
 
-def generate_in_out_pairs(expander_config, saving_config):
-    exp = Expander()
-    in_list = exp(**expander_config)
 
-    out_list = []
-    for old_name in in_list:
+def generate_in_out_pairs(data_config, saving_config, tasks_path):
+    exp = Expander()
+    in_list = exp(**data_config)
+    with open(tasks_path, 'r') as f:
+        task_list = list(f.readlines())
+
+    tasks_list, out_list = [], []
+    for old_name, task in zip(in_list, task_list):
         if ('name' in saving_config) and (saving_config['name'] is not None):
             head, tail = os.path.split(old_name)
-            tail = saving_config['name']+ '.' + tail.split('.')[-1]
+            tail = saving_config['name'] + str(task) + '.' + tail.split('.')[-1]
             out_list.append(os.path.join(head, tail))
         elif ('prefix' in saving_config) and (saving_config['prefix'] is not None):
             head, tail = os.path.split(old_name)
-            tail = saving_config['prefix']+ '_' + tail
+            tail = saving_config['prefix'] + '_' + tail
             out_list.append(os.path.join(head, tail))
         else:
             raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
-    
-    return list(zip(in_list, out_list))
+        task = int(task.strip())
+        tasks_list.append([2 * task, 2 * task + 1])
+    return list(zip(in_list, out_list, tasks_list))
 
-def load_process_save(segmenter, input_addr, output_addr):
-    img = tifffile.imread(input_addr)
-    msk = segmenter.process_one_volume(img)
-    tifffile.imwrite(output_addr, msk)
+
+def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mode='mots'):
+    imgNII = nib.load(input_addr)
+    labelNII = nib.load(label_addr)
+    img = imgNII.get_fdata()
+    label = labelNII.get_fdata()
+
+    preds = segmenter.process_one_volume(img, tasks)
+    preds = postpocess(preds, tasks)
+    labels = get_labels(label, tasks)
+    if mode == 'mots':
+        for (pred, label, task) in zip(preds, labels, tasks):
+            dice = dice_score(pred, label)
+            HD = compute_HD95(label, pred)
+            val_Dice[task] += dice
+            val_HD[task] += HD
+            count[task] += 1
+
+    for i, task in enumerate(tasks):
+        head, tail = os.path.split(output_addr)
+        tail = f'{task}_{tail}'
+        task_addr = os.path.join(head, tail)
+        if input_addr.endswith('.tif') or input_addr.endswith('.tiff'):
+            tifffile.imwrite(task_addr, preds[i])
+        else:
+            medsave(preds[i], task_addr)
+
 
 @hydra.main(config_path='inference_configs', config_name="config")
-def inference(cfg : DictConfig) -> None:
+def inference(cfg: DictConfig) -> None:
+
+    global val_Dice, val_HD, count
+    n_tasks = cfg['n_tasks']
+    val_Dice = np.zeros(n_tasks * 2)
+    val_HD = np.zeros(n_tasks * 2)
+    count = np.zeros(n_tasks * 2)
+
     seger = Segmenter(cfg['model'], cfg['checkpoint'], cfg['processing'])
-    pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'])
-    for inp_addr, outp_addr in tqdm(pairs):
-        load_process_save(seger, inp_addr, outp_addr)
+    pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['tasks'])
+    for inp_addr, outp_addr, tasks in tqdm(pairs):
+        load_process_save(seger, inp_addr, outp_addr, sorted(tasks))
+
+    count[count == 0] = 1
+    val_Dice = val_Dice / count
+    val_HD = val_HD / count
+
+    print("Sum results")
+    for t in range(n_tasks):
+        print(f'Sum: Task: {t // 2}\n'
+              f'Organ_Dice:{val_Dice[t * 2]:.4f} Tumor_Dice:{val_Dice[t * 2 + 1]:.4f}\n'
+              f'Organ_HD:{val_HD[t * 2]:.4f} Tumor_HD:{val_HD[t * 2 + 1]:.4f}\n')
+
 
 if __name__ == "__main__":
     inference()
