@@ -27,15 +27,15 @@ runner:
 training:
     verbose: True
     num_epochs: 25
-    logdir: /home/ws/tb0536/arina_mots/training-repo/new_logs/logdir/
+    logdir: /home/ws/tb0536/arina_mots/training-repo/logs/logdir/
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:
     run:
         # Output directory for normal runs
-        dir: /mnt/data/machine-learning/arina/logs/mots/${now:%Y-%m-%d_%H-%M-%S}
+        dir: /mnt/data/machine-learning/arina/new_logs/mots/${now:%Y-%m-%d_%H-%M-%S}
     sweep:
        # Output directory for sweep runs
-       dir: /mnt/data/machine-learning/arina/logs/mots/${now:%Y-%m-%d_%H-%M-%S}
+       dir: /mnt/data/machine-learning/arina/new_logs/mots/${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
