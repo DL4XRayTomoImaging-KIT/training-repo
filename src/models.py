@@ -10,13 +10,15 @@ from torchvision.models import segmentation
 
 
 class SegmentationModel(nn.Module):
-    def __init__(self, seg_model_name, in_channels=1, out_channels=32, n_tasks=6, head_hidden=128):
+    def __init__(self, seg_model_name, in_channels=1, out_channels=32, n_tasks=6, head_hidden=128, thr=0.5):
         super().__init__()
         seg_model = getattr(segmentation, seg_model_name)()
         self.in_conv = nn.Conv2d(in_channels, 3, kernel_size=3, padding=1)
         self.seg_model = seg_model
         self.out_conv = nn.Conv2d(21, out_channels, kernel_size=1, padding=0)
         self.heads = nn.ModuleList([BinaryHead(out_channels, head_hidden) for _ in range(n_tasks * 2)])
+        self.to_prob = nn.Sigmoid()
+        self.thr = thr
 
     def forward(self, img):
         img = self.in_conv(img)
@@ -33,8 +35,10 @@ class SegmentationModel(nn.Module):
         return preds
 
     @torch.no_grad()
-    def predict_head(self, embedding):
-        preds = torch.stack([head(embedding) for head in self.heads])
+    def predict_head(self, embeddings, task):
+        logits = self.heads[task](embeddings)
+        probs = self.to_prob(logits)
+        preds = probs > self.thr
         return preds
 
 
