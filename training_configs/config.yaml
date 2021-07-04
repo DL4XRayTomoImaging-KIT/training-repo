@@ -27,7 +27,7 @@ runner:
 training:
     verbose: True
     num_epochs: 25
-    logdir: /home/ws/yy1833/training-repo/logs/logdir/
+    logdir: /home/ws/tb0536/arina_mots/training-repo/logs/logdir/
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:
