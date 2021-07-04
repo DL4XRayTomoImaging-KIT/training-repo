@@ -1,0 +1,3 @@
+# @package _group_
+checkpoint_addr: /home/ws/yy1833/training-repo/logs/logdir/6Spleen_organ/checkpoints/best.pth
+checkpoint_key: model_state_dict

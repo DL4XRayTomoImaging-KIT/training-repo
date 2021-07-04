@@ -1,6 +1,8 @@
 model:
 checkpoint:
 processing:
-  batch_size: 32
-  dtype: 'uint8'
+  batch_size: 16
+  dtype: uint8
+  activation_function: sum
 dataset:
+n_tasks: 7

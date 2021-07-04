@@ -1,0 +1,6 @@
+# @package _group_
+source:
+  main_addr: '/mnt/data/machine-learning/arina/MOTS_split/MOTS_test_data.txt'
+destination:
+  prefix: segmented
+tasks: '/mnt/data/machine-learning/arina/MOTS_split/MOTS_test_tasks.txt'
