@@ -10,12 +10,12 @@ scheduler:
 criterion:
     criterion_name: ContrastiveLoss
     criterion_hyper_parameters:
-        device: cuda:0
         n_negatives: 32
-        n_tasks: 10
+        n_tasks: 7
+
 logger:
     project_name: unsupervised-segmentation
-    experiment_name: null
+    experiment_name: sample 0.5
     log_on_batch_end: True
 callbacks:
     - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 10}}
@@ -27,7 +27,7 @@ runner:
 training:
     verbose: True
     num_epochs: 25
-    logdir: /home/ws/yy1833/training-repo/logs/logdir
+    logdir: /home/ws/yy1833/training-repo/logs/logdir/
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:
@@ -39,6 +39,3 @@ hydra:
        dir: /mnt/data/machine-learning/arina/logs/mots/${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
-
-
-

@@ -1,7 +1,7 @@
 # @package _group_
 data_gatherer_name: gather_paths
 data_gatherer_kwargs:
-  path: /home/ws/yy1833/training-repo/data_loading/DoDNet/dataset/list/MOTS/MOTS_train.txt
+  path: /mnt/data/machine-learning/arina/MOTS_split/MOTS_train.txt
 aug_name: strong_aug
 random_state: 42
 dataset_kwargs:
@@ -12,4 +12,4 @@ dataset_kwargs:
   one_volume_kwargs: {'use_ram': True}
 dataset_rebalance_function_name: TVSD_rebalance
 dataloader_kwargs:
-  batch_size: 64
+  batch_size: 256

@@ -3,3 +3,5 @@ network_type: SegmentationModel
 seg_model_name: deeplabv3_resnet50
 in_channels: 1
 out_channels: 32
+n_tasks: 7
+head_hidden: 512
