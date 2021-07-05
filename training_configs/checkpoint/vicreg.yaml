@@ -1,0 +1,5 @@
+# @package _group_
+load_function: partial_load
+checkpoint_addr: '/mnt/data/machine-learning/logs/medaka-supervised/2021-05-31_20-51-40/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'
+drop_parameters: ['segmentation_head.', 'metric_head.', 'classification_head.']
