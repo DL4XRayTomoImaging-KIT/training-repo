@@ -22,8 +22,6 @@ for file in tqdm(os.listdir(ROOT)):
                                   in_channels=1, out_channels=32,
                                   n_tasks=7, head_hidden=512)
         w = cp['model_state_dict']
-        if prev_name == 'disjoint_full_data':
-            w = {k: v for k, v in cp['model_state_dict'].items() if 'heads' not in k}
         partial_load(model, w)
 
         with open(os.path.join(ROOT, file), 'r') as f:
@@ -56,7 +54,7 @@ for file in tqdm(os.listdir(ROOT)):
             criterion=criterion,
             scheduler=scheduler,
             loaders=loaders,
-            logdir=f"/home/ws/yy1833/training-repo/logs/logdir/{name}",
+            logdir=f"/home/ws/tb0536/arina_mots/training-repo/logs/logdir/{name}",
             num_epochs=n_epochs,
             verbose=False,
             timeit=True,
