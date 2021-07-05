@@ -48,6 +48,7 @@ medium_aug_rot = Compose([OneOf([A.Blur(blur_limit=5),
                              A.RandomGamma(gamma_limit=(90, 110))], p=0.5),
                       OneOf([A.GridDistortion(distort_limit=0.2),
                              A.ShiftScaleRotate(),
+                             A.Flip(),
                              A.GlassBlur(max_delta=5)], p=0.5),
                       A.GaussNoise(var_limit=(20, 50), p=0.5),
                       A.ToFloat(always_apply=True)], p=0.99)
