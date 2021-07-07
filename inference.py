@@ -130,7 +130,7 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
             val_Dice[task] += dice
             val_HD[task] += HD
             count[task] += 1
-
+    '''
     for i, task in enumerate(tasks):
         head, tail = os.path.split(output_addr)
         tail = f'{task}_{tail}'
@@ -139,6 +139,7 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
             tifffile.imwrite(task_addr, preds[i])
         else:
             medsave(preds[i], task_addr)
+    '''
 
 
 @hydra.main(config_path='inference_configs', config_name="config")
