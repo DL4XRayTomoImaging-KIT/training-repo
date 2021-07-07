@@ -114,3 +114,4 @@ def postpocess(preds, tasks, mode='mots'):
             processed.append(pred_organ)
         if pred_tumor is not None:
             processed.append(pred_tumor)
+        return processed
