@@ -87,14 +87,17 @@ class Segmenter:
         return predictions
 
 
-def generate_in_out_pairs(data_config, saving_config, tasks_path):
+def generate_in_out_pairs(data_config, saving_config, labels_path, tasks_path):
     exp = Expander()
     in_list = exp(**data_config)
     with open(tasks_path, 'r') as f:
         task_list = list(f.readlines())
 
-    tasks_list, out_list = [], []
-    for old_name, task in zip(in_list, task_list):
+    with open(labels_path, 'r') as f:
+        label_list = list(f.readlines())
+
+    tasks_list, labels_list, out_list = [], [], []
+    for old_name, label, task in zip(in_list, label_list, task_list):
         if ('name' in saving_config) and (saving_config['name'] is not None):
             head, tail = os.path.split(old_name)
             tail = saving_config['name'] + str(task) + '.' + tail.split('.')[-1]
@@ -107,7 +110,8 @@ def generate_in_out_pairs(data_config, saving_config, tasks_path):
             raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
         task = int(task.strip())
         tasks_list.append([2 * task, 2 * task + 1])
-    return list(zip(in_list, out_list, tasks_list))
+        labels_list.append(label.strip())
+    return list(zip(in_list, out_list, labels_list, tasks_list))
 
 
 def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mode='mots'):
@@ -147,9 +151,9 @@ def inference(cfg: DictConfig) -> None:
     count = np.zeros(n_tasks * 2)
 
     seger = Segmenter(cfg['model'], cfg['checkpoint'], cfg['processing'])
-    pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['tasks'])
-    for inp_addr, outp_addr, tasks in tqdm(pairs):
-        load_process_save(seger, inp_addr, outp_addr, sorted(tasks))
+    pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['labels'], cfg['dataset']['tasks'])
+    for inp_addr, outp_addr, label_addr, tasks in tqdm(pairs):
+        load_process_save(seger, inp_addr, label_addr, outp_addr, sorted(tasks))
 
     count[count == 0] = 1
     val_Dice = val_Dice / count
