@@ -82,6 +82,15 @@ def get_labels(label, tasks):
     return labels
 
 
+def convert_tasks(task):
+    task = int(task.strip())
+    if task in [6]:
+        return [2 * task]
+    if task in [4, 5]:
+        return [2 * task + 1]
+    return [2 * task, 2 * task + 1]
+
+
 def postpocess(preds, tasks, mode='mots'):
     if mode == 'mots':
         processed = []

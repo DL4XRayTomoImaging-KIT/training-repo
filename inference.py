@@ -8,15 +8,15 @@ from src.augmentations import none_aug
 from flexpand import Expander
 import os
 import tifffile
-from medpy.io import load as medload
 from medpy.io import save as medsave
+from medpy.io import load as medload
 import nibabel as nib
 
 import hydra
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
 
-from metrics import get_labels, postpocess, dice_score, compute_HD95
+from metrics import get_labels, convert_tasks, postpocess, dice_score, compute_HD95
 
 val_Dice, val_HD, count = None, None, None
 
@@ -108,8 +108,7 @@ def generate_in_out_pairs(data_config, saving_config, labels_path, tasks_path):
             out_list.append(os.path.join(head, tail))
         else:
             raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
-        task = int(task.strip())
-        tasks_list.append([2 * task, 2 * task + 1])
+        tasks_list.append(convert_tasks(task))
         labels_list.append(label.strip())
     return list(zip(in_list, out_list, labels_list, tasks_list))
 
