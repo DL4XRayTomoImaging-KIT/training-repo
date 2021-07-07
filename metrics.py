@@ -86,30 +86,31 @@ def postpocess(preds, tasks, mode='mots'):
     if mode == 'mots':
         processed = []
         pred_organ, pred_tumor = None, None
-        if tasks[0] in [0, 2, 4, 6]:
+        task_repr = tasks[0]
+        if task_repr in [0, 2, 4, 6]:
             [pred_organ, pred_tumor] = preds
 
-        if tasks[0] in [0, 6]:
+        if task_repr in [0, 6]:
             pred_organ = continuous_region_extract_organ(pred_organ, 1)
             pred_tumor = np.where(pred_organ, pred_tumor, 0)
             pred_tumor = continuous_region_extract_tumor(pred_tumor)
 
-        elif tasks[0] == 2:
+        elif task_repr == 2:
             pred_organ = continuous_region_extract_organ(pred_organ, 2)
             pred_tumor = np.where(pred_organ, pred_tumor, np.zeros_like(pred_tumor))
             pred_tumor = continuous_region_extract_organ(pred_tumor, 1)
 
-        elif tasks[0] == 4:
+        elif task_repr == 4:
             pred_tumor = continuous_region_extract_tumor(pred_tumor)
 
-        elif tasks[0] in [9, 11]:
+        elif task_repr in [9, 11]:
             pred_tumor = preds[0]
             pred_tumor = continuous_region_extract_organ(pred_tumor, 1)
 
-        elif tasks[0] == 12:
+        elif task_repr == 12:
             pred_organ = continuous_region_extract_organ(pred_organ, 1)
         else:
-            print("No such a task index!!!")
+            print(f"No such a task index: {task_repr}!!!")
         if pred_organ is not None:
             processed.append(pred_organ)
         if pred_tumor is not None:
