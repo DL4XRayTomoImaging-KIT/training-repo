@@ -3,6 +3,7 @@ import nibabel as nib
 import numpy as np
 from medpy.metric import hd95
 from skimage.measure import label as LAB
+from sklearn.metrics import precision_score, recall_score, accuracy_score
 
 # adapded from https://github.com/jianpengz/DoDNet/blob/c22687bffb36e218f0239f6bbd2c8971088a7a9c/a_DynConv/postp.py
 
@@ -65,6 +66,15 @@ def compute_HD95(ref, pred):
         return 373.12866
     else:
         return hd95(pred, ref, (1, 1, 1))
+
+
+def compute_clf_metrics(ref, pred):
+    ref = ref.view(-1)
+    pred = pred.view(-1)
+    acc = accuracy_score(ref, pred)
+    rec = recall_score(ref, pred)
+    prec = precision_score(ref, pred)
+    return acc, rec, prec
 
 
 def get_labels(label, tasks):

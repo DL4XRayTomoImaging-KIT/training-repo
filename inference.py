@@ -17,9 +17,9 @@ import hydra
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
 
-from metrics import get_labels, convert_tasks, postpocess, dice_score, compute_HD95
+from metrics import get_labels, convert_tasks, postpocess, dice_score, compute_HD95, compute_clf_metrics
 
-val_Dice, val_HD, count = None, None, None
+val_Dice, val_HD, val_acc, val_rec, val_prec, count = None, None, None, None, None, None
 
 
 # what to configure:
@@ -115,6 +115,7 @@ def generate_in_out_pairs(data_config, saving_config, labels_path, tasks_path):
 
 
 def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mode='mots'):
+    global val_Dice, val_HD, val_acc, val_rec, val_prec, count
     imgNII = nib.load(input_addr)
     labelNII = nib.load(label_addr)
     img = imgNII.get_fdata()
@@ -127,8 +128,12 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
         for (pred, label, task) in zip(preds, labels, tasks):
             dice = dice_score(pred, label)
             HD = compute_HD95(label, pred)
+            acc, rec, prec = compute_clf_metrics(label, pred)
             val_Dice[task] += dice
             val_HD[task] += HD
+            val_acc[task] += acc
+            val_rec[task] += rec
+            val_prec[task] += prec
             count[task] += 1
     '''
     for i, task in enumerate(tasks):
@@ -145,15 +150,17 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
 @hydra.main(config_path='inference_configs', config_name="config")
 def inference(cfg: DictConfig) -> None:
 
-    global val_Dice, val_HD, count
+    global val_Dice, val_HD, val_acc, val_rec, val_prec, count
     n_tasks = cfg['n_tasks']
     val_Dice = np.zeros(n_tasks * 2)
     val_HD = np.zeros(n_tasks * 2)
+    val_acc, val_prec, val_rec = np.zeros(n_tasks * 2), np.zeros(n_tasks * 2), np.zeros(n_tasks * 2)
+
     count = np.zeros(n_tasks * 2)
 
     seger = Segmenter(cfg['model'], cfg['checkpoint'], cfg['processing'])
     pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['labels'], cfg['dataset']['tasks'])
-    for inp_addr, outp_addr, label_addr, tasks in tqdm(pairs):
+    for inp_addr, outp_addr, label_addr, tasks in tqdm(islice(pairs, 0, 5)):
         load_process_save(seger, inp_addr, label_addr, outp_addr, sorted(tasks))
 
     count[count == 0] = 1
@@ -164,7 +171,9 @@ def inference(cfg: DictConfig) -> None:
     for t in range(n_tasks):
         print(f'Sum: Task: {t // 2}\n'
               f'Organ_Dice:{val_Dice[t * 2]:.4f} Tumor_Dice:{val_Dice[t * 2 + 1]:.4f}\n'
-              f'Organ_HD:{val_HD[t * 2]:.4f} Tumor_HD:{val_HD[t * 2 + 1]:.4f}\n')
+              f'Organ_HD:{val_HD[t * 2]:.4f} Tumor_HD:{val_HD[t * 2 + 1]:.4f}\n'
+              f'Organ acc, rec, prec:{val_acc[t * 2]:.2f}, {val_rec[t * 2]:.2f}, {val_prec[t * 2]:.4f} '
+              f'Tumor acc, rec, prec:{val_acc[t * 2 + 1]:.2f}, {val_rec[t * 2 + 1]:.2f}, {val_prec[t * 2 + 1]:.4f}\n')
 
 
 if __name__ == "__main__":
