@@ -69,8 +69,8 @@ def compute_HD95(ref, pred):
 
 
 def compute_clf_metrics(ref, pred):
-    ref = ref.view(-1)
-    pred = pred.view(-1)
+    ref = ref.reshape(-1)
+    pred = pred.reshape(-1)
     acc = accuracy_score(ref, pred)
     rec = recall_score(ref, pred)
     prec = precision_score(ref, pred)
