@@ -164,8 +164,11 @@ def inference(cfg: DictConfig) -> None:
         load_process_save(seger, inp_addr, label_addr, outp_addr, sorted(tasks))
 
     count[count == 0] = 1
-    val_Dice = val_Dice / count
-    val_HD = val_HD / count
+    val_Dice /= count
+    val_HD /= count
+    val_acc /= count
+    val_rec /= count
+    val_prec /= count
 
     print("Sum results")
     for t in range(n_tasks):
