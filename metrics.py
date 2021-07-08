@@ -96,8 +96,13 @@ def postpocess(preds, tasks, mode='mots'):
         processed = []
         pred_organ, pred_tumor = None, None
         task_repr = tasks[0]
+
         if task_repr in [0, 2, 4, 6]:
             [pred_organ, pred_tumor] = preds
+        elif task_repr in [9, 11]:
+            [pred_tumor] = preds
+        else:
+            [pred_organ] = preds
 
         if task_repr in [0, 6]:
             pred_organ = continuous_region_extract_organ(pred_organ, 1)

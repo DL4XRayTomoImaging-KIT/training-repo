@@ -11,6 +11,7 @@ import tifffile
 from medpy.io import save as medsave
 from medpy.io import load as medload
 import nibabel as nib
+from itertools import islice
 
 import hydra
 from omegaconf import DictConfig
@@ -152,7 +153,7 @@ def inference(cfg: DictConfig) -> None:
 
     seger = Segmenter(cfg['model'], cfg['checkpoint'], cfg['processing'])
     pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['labels'], cfg['dataset']['tasks'])
-    for inp_addr, outp_addr, label_addr, tasks in tqdm(pairs):
+    for inp_addr, outp_addr, label_addr, tasks in tqdm(islice(pairs, 220, 240)):
         load_process_save(seger, inp_addr, label_addr, outp_addr, sorted(tasks))
 
     count[count == 0] = 1
