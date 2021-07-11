@@ -70,7 +70,7 @@ class Segmenter:
             embedding = self.model.module.get_embeddings(batch)
             for i, task in enumerate(tasks):
                 pred = self.model.module.predict_head(embedding, task)
-                pred = self.activation_function(pred)
+                # pred = self.activation_function(pred)
                 pred = pred.detach().cpu().numpy()
                 predictions[i].append(pred)
 
