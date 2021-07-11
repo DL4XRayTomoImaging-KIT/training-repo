@@ -62,7 +62,7 @@ class Segmenter:
         predictions = [[] for _ in tasks]
         for b in range(int(np.ceil(len(volume) / self.batch_size))):
             batch = volume[self.batch_size * b: self.batch_size * (b + 1)]
-            #batch = batch[:, :batch.shape[1] // self.image_grain * self.image_grain,
+            #  batch = batch[:, :batch.shape[1] // self.image_grain * self.image_grain,
             #        :batch.shape[2] // self.image_grain * self.image_grain]
             batch = none_aug(image=batch)['image']
             batch = torch.from_numpy(batch[:, None, ...])
@@ -74,10 +74,10 @@ class Segmenter:
                 pred = pred.detach().cpu().numpy()
                 predictions[i].append(pred)
 
-        '''
         for i in range(len(tasks)):
-            full_pred = np.concatenate(predictions[i])
+            predictions[i] = np.concatenate(predictions[i])
 
+            '''
             if full_pred.ndim == 4:
                 predictions[i] = np.pad(full_pred, ((0, 0), (0, 0), (0, volume.shape[1] - full_pred.shape[2]),
                                                    (0, volume.shape[2] - full_pred.shape[3])))
@@ -87,7 +87,7 @@ class Segmenter:
 
             if self.output_dtype is not None:
                 predictions[i] = predictions[i].astype(self.output_dtype)
-        '''
+            '''
         return predictions
 
 
