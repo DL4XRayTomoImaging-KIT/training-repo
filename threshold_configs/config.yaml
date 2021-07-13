@@ -1,0 +1,7 @@
+model:
+checkpoint:
+processing:
+  batch_size: 16
+  dtype: uint8
+dataset:
+n_tasks: 7
