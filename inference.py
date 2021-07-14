@@ -64,34 +64,21 @@ class Segmenter:
 
     def process_one_volume(self, volume, tasks, logits=False):
         predictions = [[] for _ in tasks]
+
         for b in range(int(np.ceil(len(volume) / self.batch_size))):
             batch = volume[self.batch_size * b: self.batch_size * (b + 1)]
-            #  batch = batch[:, :batch.shape[1] // self.image_grain * self.image_grain,
-            #        :batch.shape[2] // self.image_grain * self.image_grain]
             batch = none_aug(image=batch)['image']
             batch = torch.from_numpy(batch[:, None, ...])
             batch = batch.to(torch.device('cuda:0'))
             embedding = self.model.module.get_embeddings(batch)
             for i, task in enumerate(tasks):
-                pred = self.model.module.predict_head(embedding, task, logits)
-                # pred = self.activation_function(pred)
+                pred = self.model.module.predict_head(embedding, task,
+                                                      return_logits=logits)
                 pred = pred.detach().cpu().numpy()
                 predictions[i].append(pred)
 
         for i in range(len(tasks)):
             predictions[i] = np.concatenate(predictions[i])
-
-            '''
-            if full_pred.ndim == 4:
-                predictions[i] = np.pad(full_pred, ((0, 0), (0, 0), (0, volume.shape[1] - full_pred.shape[2]),
-                                                   (0, volume.shape[2] - full_pred.shape[3])))
-            elif full_pred.ndim == 3:
-                predictions[i] = np.pad(full_pred, (
-                    (0, 0), (0, volume.shape[1] - full_pred.shape[1]), (0, volume.shape[2] - full_pred.shape[2])))
-
-            if self.output_dtype is not None:
-                predictions[i] = predictions[i].astype(self.output_dtype)
-            '''
         return predictions
 
 
@@ -255,7 +242,7 @@ class Segmenter:
             batch = batch.to(torch.device('cuda:0'))
             embedding = self.model.module.get_embeddings(batch)
             for i, task in enumerate(tasks):
-                pred = self.model.module.predict_head(embedding, task, logits=logits)
+                pred = self.model.module.predict_head(embedding, task, return_logits=logits)
                 pred = pred.detach().cpu().numpy()
                 predictions[i].append(pred)
 
@@ -330,7 +317,7 @@ def collect_preds_n_labels(segmenter, input_addr, label_addr, tasks):
     img = imgNII.get_fdata()
     label = labelNII.get_fdata()
 
-    preds = segmenter.process_one_volume(img, tasks, return_logits=True)
+    preds = segmenter.process_one_volume(img, tasks, logits=True)
     labels = get_labels(label, tasks)
     for (pred, label, task) in zip(preds, labels, tasks):
         pred, label = pred.reshape(-1), label.reshape(-1)
