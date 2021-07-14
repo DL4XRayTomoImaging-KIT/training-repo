@@ -62,7 +62,7 @@ class Segmenter:
         else:
             self.output_dtype = None
 
-    def process_one_volume(self, volume, tasks):
+    def process_one_volume(self, volume, tasks, logits=False):
         predictions = [[] for _ in tasks]
         for b in range(int(np.ceil(len(volume) / self.batch_size))):
             batch = volume[self.batch_size * b: self.batch_size * (b + 1)]
@@ -73,7 +73,7 @@ class Segmenter:
             batch = batch.to(torch.device('cuda:0'))
             embedding = self.model.module.get_embeddings(batch)
             for i, task in enumerate(tasks):
-                pred = self.model.module.predict_head(embedding, task)
+                pred = self.model.module.predict_head(embedding, task, logits)
                 # pred = self.activation_function(pred)
                 pred = pred.detach().cpu().numpy()
                 predictions[i].append(pred)
