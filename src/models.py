@@ -33,10 +33,10 @@ class SegmentationModel(nn.Module):
         return preds
 
     @torch.no_grad()
-    def predict_head(self, embeddings, task, logits=False):
+    def predict_head(self, embeddings, task, return_logits=False):
         logits = self.heads[task](embeddings)
         probs = self.to_prob(logits)
-        if not logits:
+        if not return_logits:
             preds = probs > self.thr[task]
         return preds
 
