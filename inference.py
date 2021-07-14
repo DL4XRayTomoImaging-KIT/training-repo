@@ -246,7 +246,7 @@ class Segmenter:
         else:
             self.output_dtype = None
 
-    def process_one_volume(self, volume, tasks, logits=True):
+    def process_one_volume(self, volume, tasks, logits=False):
         predictions = [[] for _ in tasks]
         for b in range(int(np.ceil(len(volume) / self.batch_size))):
             batch = volume[self.batch_size * b: self.batch_size * (b + 1)]
@@ -324,13 +324,13 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
 
 
 def collect_preds_n_labels(segmenter, input_addr, label_addr, tasks):
-    global logits, labels
+    global logits_dict, labels_dict
     imgNII = nib.load(input_addr)
     labelNII = nib.load(label_addr)
     img = imgNII.get_fdata()
     label = labelNII.get_fdata()
 
-    preds = segmenter.process_one_volume(img, tasks, logits=True)
+    preds = segmenter.process_one_volume(img, tasks, return_logits=True)
     labels = get_labels(label, tasks)
     for (pred, label, task) in zip(preds, labels, tasks):
         pred, label = pred.reshape(-1), label.reshape(-1)
