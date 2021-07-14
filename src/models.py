@@ -4,8 +4,6 @@ from segmentation_models_pytorch import * # we need everything from the smp
 import torch
 from torch import nn as nn
 
-from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock
-from einops import rearrange
 from torchvision.models import segmentation
 
 
@@ -18,7 +16,7 @@ class SegmentationModel(nn.Module):
         self.out_conv = nn.Conv2d(21, out_channels, kernel_size=1, padding=0)
         self.heads = nn.ModuleList([BinaryHead(out_channels, head_hidden) for _ in range(n_tasks * 2)])
         self.to_prob = nn.Sigmoid()
-        self.thr = thr
+        self.thr = torch.ones(n_tasks * 2) * thr
 
     def forward(self, img):
         img = self.in_conv(img)
@@ -35,10 +33,11 @@ class SegmentationModel(nn.Module):
         return preds
 
     @torch.no_grad()
-    def predict_head(self, embeddings, task):
+    def predict_head(self, embeddings, task, logits=False):
         logits = self.heads[task](embeddings)
         probs = self.to_prob(logits)
-        preds = probs > self.thr
+        if not logits:
+            preds = probs > self.thr[task]
         return preds
 
 
@@ -67,6 +66,6 @@ def partial_load(model, state_dict, renew_parameters=None):
     if renew_parameters is not None:
         not_updated += renew_parameters
 
-    model_side_addendum = {k:v for k,v in model.state_dict().items() if k in not_updated}
+    model_side_addendum = {k: v for k, v in model.state_dict().items() if k in not_updated}
     state_dict.update(model_side_addendum)
     model.load_state_dict(state_dict)
