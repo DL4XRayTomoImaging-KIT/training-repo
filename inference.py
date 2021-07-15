@@ -129,38 +129,6 @@ def load_process_save(segmenter, input_addr, label_addr, output_addr, tasks, mod
     '''
 
 
-@hydra.main(config_path='inference_configs', config_name="config")
-def inference(cfg: DictConfig) -> None:
-
-    global val_Dice, val_HD, val_acc, val_rec, val_prec, count
-    n_tasks = cfg['n_tasks']
-    val_Dice = np.zeros(n_tasks * 2)
-    val_HD = np.zeros(n_tasks * 2)
-    val_acc, val_prec, val_rec = np.zeros(n_tasks * 2), np.zeros(n_tasks * 2), np.zeros(n_tasks * 2)
-
-    count = np.zeros(n_tasks * 2)
-
-    seger = Segmenter(cfg['model'], cfg['checkpoint'], cfg['processing'])
-    pairs = generate_in_out_pairs(cfg['dataset']['source'], cfg['dataset']['destination'], cfg['dataset']['labels'], cfg['dataset']['tasks'])
-    for inp_addr, outp_addr, label_addr, tasks in tqdm(islice(pairs, 0, 5)):
-        load_process_save(seger, inp_addr, label_addr, outp_addr, sorted(tasks))
-
-    count[count == 0] = 1
-    val_Dice /= count
-    val_HD /= count
-    val_acc /= count
-    val_rec /= count
-    val_prec /= count
-
-    print("Sum results")
-    for t in range(n_tasks):
-        print(f'Sum: Task: {t // 2}\n'
-              f'Organ_Dice:{val_Dice[t * 2]:.4f} Tumor_Dice:{val_Dice[t * 2 + 1]:.4f}\n'
-              f'Organ_HD:{val_HD[t * 2]:.4f} Tumor_HD:{val_HD[t * 2 + 1]:.4f}\n'
-              f'Organ acc, rec, prec:{val_acc[t * 2]:.2f}, {val_rec[t * 2]:.2f}, {val_prec[t * 2]:.4f} '
-              f'Tumor acc, rec, prec:{val_acc[t * 2 + 1]:.2f}, {val_rec[t * 2 + 1]:.2f}, {val_prec[t * 2 + 1]:.4f}\n')
-
-
 def collect_preds_n_labels(segmenter, input_addr, label_addr, tasks):
     global logits_dict, labels_dict
     imgNII = nib.load(input_addr)
@@ -174,7 +142,7 @@ def collect_preds_n_labels(segmenter, input_addr, label_addr, tasks):
         pred, label = pred.reshape(-1), label.reshape(-1)
         idx = np.random.choice(len(pred), n_sample)
         logits_dict[task].append(pred[idx])
-        labels_dict[task].append(labels[idx])
+        labels_dict[task].append(label[idx])
 
 
 @hydra.main(config_path='inference_configs', config_name="config")
