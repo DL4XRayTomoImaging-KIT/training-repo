@@ -91,7 +91,7 @@ def generate_in_out_pairs(data_config, saving_config, labels_path, tasks_path):
             out_list.append(os.path.join(head, tail))
         else:
             raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
-        tasks_list.append(convert_tasks(task))
+        tasks_list.append(ast.literal_eval(task))
         labels_list.append(label.strip())
     return list(zip(in_list, out_list, labels_list, tasks_list))
 
