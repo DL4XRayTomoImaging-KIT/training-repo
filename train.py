@@ -155,7 +155,7 @@ def get_loaders(data_gatherer_name='supervised_segmentation_target_matcher', dat
     return train_loader, test_loader
 
 @cfg_ut('optimizer', 'preparing optimizer')
-def get_optimizer(optimizer_name, model, optimizer_hyper_parameters=None):
+def get_optimizer(model, optimizer_name, optimizer_hyper_parameters=None):
     optimizer_hyper_parameters = optimizer_hyper_parameters or {}
     optimizer = getattr(torch.optim, optimizer_name)(model.parameters(), **optimizer_hyper_parameters)
     optimizer.zero_grad()
