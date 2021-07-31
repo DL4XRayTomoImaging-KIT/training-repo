@@ -1,8 +1,8 @@
 # @package _group_
 data_gatherer_kwargs:
-  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eyes_to_train/{}.nii
-  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/proper_images/{}.tif
-aug_name: medium_aug_rot
+  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eye_decropped/{}.tif
+  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+aug_name: strong_aug_rot
 random_state: 42
 dataset_kwargs:
   crop_size: 256
@@ -10,8 +10,10 @@ dataset_kwargs:
   one_volume_kwargs: {'use_ram': True}
   localised_crop: True
   label_converter: {'0': 0, '1': 1, '2': 1, '3': 0, '4': 0, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6} # legacy conversion, keeped for compatibility
+  # additional_slices_aside: 2
+  # step_slices_aside: 2
 dataset_rebalance_function_name: TVSD_dataset_resample
 sampler_function_kwargs:
   # empty_part: 0.2
 dataloader_kwargs:
-  batch_size: 64
+  batch_size: 12

@@ -4,7 +4,7 @@ dataset:
 optimizer:
     lr: 3e-4
 criterion:
-    criterion_name: CrossentropyND
+    criterion_name: FocalLoss
 logger:
     project_name: fish-eye
     experiment_name: null 
@@ -16,6 +16,8 @@ training:
     verbose: True
     num_epochs: 10
     logdir: ./logdir
+    main_metric: 'mean-iou'
+    minimize_metric: False
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:
