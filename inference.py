@@ -25,6 +25,7 @@ class Segmenter:
         load_weights(self.model, **checkpoint_config)
         self.model = nn.DataParallel(self.model)
         self.model.to(torch.device('cuda:0'))
+        self.model.eval()
 
         self.batch_size = processing_parameters['batch_size']
 
