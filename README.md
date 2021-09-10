@@ -10,6 +10,8 @@ But for now let roll on with what we have.
 
 To check the work of the initial setup one can run
 ```shell
-nice -n 5 python train.py +dataset=eyes +model=eyes
+nice -n 5 python train.py +model=brain +dataset=brain training.num_epochs=100 dataset.dataset_kwargs.crop_size=512 logger.project_name=medaka_brain +dataset.dataloader_kwargs.batch_size=64
+
+nice -n 5 python train.py +model=heartkidney +dataset=heartkidney training.num_epochs=100 dataset.dataset_kwargs.crop_size=512 logger.project_name=medaka_heartkidney +dataset.dataloader_kwargs.batch_size=64
 ```
 which should train segmentation model for medaka eyes for 10 epochs.

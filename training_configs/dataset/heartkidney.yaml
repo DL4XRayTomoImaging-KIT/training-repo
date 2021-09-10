@@ -1,6 +1,6 @@
 # @package _group_
 data_gatherer_kwargs:
-  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
+  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/heartkidney_decropped/{}.tif
   volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
 aug_name: medium_aug_rot
 random_state: 42
@@ -8,3 +8,4 @@ dataset_kwargs:
   crop_size: 256
   mode_3d: False
   one_volume_kwargs: {'use_ram': True}
+  label_converter: {'0':0, '4':1, '5':2, '6':3, '7':4, '9':5, '10':6}
