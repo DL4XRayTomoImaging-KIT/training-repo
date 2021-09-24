@@ -18,7 +18,7 @@ dst_addr = '/autofs/HD-LSDF/sd20d002/segmentations/workshop/heartkidney_decroppe
 converter = {'0':0, '4':1, '5':2, '6':3, '7':4, '9':5, '10':6}
 
 for src_fl in src_fls:
-    id = re.findall(r'/([\d]*).tif', src_fl)[0]
+    id = re.findall(r'/(\d*).tif', src_fl)[0]
     dst_fls = glob(f'{dst_addr}{id}.tif')
     
     if len(dst_fls) < 2:

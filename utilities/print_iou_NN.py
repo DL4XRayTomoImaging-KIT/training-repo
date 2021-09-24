@@ -28,7 +28,7 @@ seger = Segmenter(model_config=model, checkpoint_config=checkpoint, processing_p
 
 
 for src_fl in src_fls:
-    id = re.findall(r'/([\d]*).tif', src_fl)[0]
+    id = re.findall(r'/(\d*).tif', src_fl)[0]
     dst_fls = glob(f'{dst_addr}{id}.tif')
     
     if not dst_fls:
