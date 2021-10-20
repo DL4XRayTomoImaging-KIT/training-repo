@@ -83,6 +83,9 @@ def generate_in_out_pairs(expander_config, saving_config):
             head, tail = os.path.split(old_name)
             tail = saving_config['prefix']+ '_' + tail
             out_list.append(os.path.join(head, tail))
+        elif ('folder' in saving_config) and (saving_config['folder'] is not None):
+            head, tail = os.path.split(old_name)
+            out_list.append(os.path.join(saving_config['folder'], tail))
         else:
             raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
     
