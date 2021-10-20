@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  main_addr: '/mnt/data/machine-learning/medakas/side/inference/'
+destination:
+  folder: '/mnt/data/machine-learning/medakas/side/inference_out/'

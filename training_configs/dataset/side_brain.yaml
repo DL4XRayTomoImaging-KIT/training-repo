@@ -1,0 +1,11 @@
+# @package _group_
+data_gatherer_kwargs:
+  targets: /mnt/data/machine-learning/medakas/side/msk/{}.tif
+  volumes: /mnt/data/machine-learning/medakas/side/img/{}.tif
+aug_name: medium_aug_rot
+random_state: 42
+dataset_kwargs:  
+  crop_size: 256
+  # localised_crop: True
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
