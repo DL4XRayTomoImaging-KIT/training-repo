@@ -1,0 +1,6 @@
+model:
+checkpoint:
+processing:
+  batch_size: 32
+  dtype: 'uint8'
+dataset:
