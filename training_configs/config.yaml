@@ -22,10 +22,10 @@ attempts: null # fake variable for multirun to repeat action several times
 hydra:
     run:
         # Output directory for normal runs
-        dir: /mnt/data/machine-learning/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+        dir: /home/ws/tb0536/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
     sweep:
        # Output directory for sweep runs
-       dir: /mnt/data/machine-learning/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+       dir: /home/ws/tb0536/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
 

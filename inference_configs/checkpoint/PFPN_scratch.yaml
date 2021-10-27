@@ -1,0 +1,3 @@
+# @package _group_
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/2021-10-21_18-24-36/0_+dataset=eyes,+model=eyes_pfpn,logger.project_name=fish-eye-segmentation/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'
