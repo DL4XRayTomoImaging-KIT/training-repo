@@ -281,3 +281,40 @@ def DLD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, unsupervis
 def resample_concatenated_DLD(dataset, **kwargs):
     resampled_dsets = [DLD_dataset_resample(d, **kwargs) for d in dataset.datasets]
     return ConcatDataset(resampled_dsets)
+
+class BatchViewsSampler:
+    def __init__(self, dset, batch_size, views_count, restrict_chunk=False, batch_count=None, distribution='even', temperature=None,):
+        self.chunks_number = len(dset.datasets)
+        self.chunk_lengths = [len(d) for d in dset.datasets]
+        self.chunk_padding = np.cumsum([0] + self.chunk_lengths)
+
+        if distribution == 'gaussian':
+            self.sampler = lambda s: np.clip(np.random.randn(s)/temperature, -0.5, 0.5) + 0.5
+        elif distribution == 'even':
+            self.sampler = lambda s: np.random.random(s)
+        else:
+            raise ValueError('Unknown distribution family {distribution}')
+
+
+        self.batch_size = batch_size
+        self.batch_count = int(len(dset) / batch_size) if batch_count is None else batch_count
+        self.views_count = views_count
+        self.restrict_chunk = restrict_chunk
+
+    def __iter__(self):
+        for i in range(self.batch_count):
+            yield self.__call__()
+
+    def __len__(self):
+        return self.batch_count
+
+    def __call__(self):
+        if self.restrict_chunk:
+            chunk_id = np.random.randint(self.chunks_number)
+            relative_interchunk = self.sampler(self.batch_size)
+            interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_id] -1)).astype(np.int)
+            batch_ids = interchunk_id + self.chunk_padding[chunk_id]
+        else:
+            batch_ids = np.random.randint(0, np.sum(self.chunk_lengths), self.batch_size)
+        batch_ids = np.repeat(batch_ids, self.views_count)
+        return batch_ids
