@@ -72,3 +72,19 @@ class PointVICRegRunner(Runner):
             loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
+
+
+class SimCLRRunner(Runner):
+    def _handle_batch(self, batch):
+        imgs = batch[0]
+
+        embeds = self.model(imgs)
+
+        loss = self.criterion(embeds)
+
+        self.batch_metrics.update({'loss': loss.item()})
+    
+        if self.is_train_loader:
+            loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
