@@ -142,7 +142,10 @@ def supervised_segmentation_target_matcher(volumes, targets):
     else:
         volume_ids = label_ids
     
-    return [volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]
+    return list(zip([volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]))
+
+def unsupervised_target_matcher(volumes):
+    return glob(volumes.format('*'))
 
 def semi_supervised_segmentation_target_matcher(supervised_volumes, supervised_targets, unsupervised_volumes):
     supervised_volumes, supervised_targets = supervised_segmentation_target_matcher(supervised_volumes, supervised_targets)
@@ -151,8 +154,9 @@ def semi_supervised_segmentation_target_matcher(supervised_volumes, supervised_t
     return (supervised_volumes, supervised_targets), unsupervised_volumes
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
-    volumes_limit = volumes_limit or len(gathered_data[0])
-    train_data, test_data = train_test_split(list(zip(*gathered_data))[:volumes_limit], random_state=random_state, train_size=train_volumes)
+    volumes_limit = volumes_limit or len(gathered_data)
+    
+    train_data, test_data = train_test_split(gathered_data[:volumes_limit], random_state=random_state, train_size=train_volumes)
     return train_data, test_data
 
 def semi_supervised_train_test_split(gathered_data, unsupervised_test_part=False, random_state=None, 
@@ -184,6 +188,12 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
         
         datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
                                              **kwargs))
+    return ConcatDataset(datasets)
+
+def get_unsupervised_TVSD_datasets(data_addresses, aug=None, **kwargs):
+    datasets = []
+    for image_addr in data_addresses:
+        datasets.append(VolumeSlicingDataset(image_addr, augmentations=aug, **kwargs))
     return ConcatDataset(datasets)
 
 def get_DLD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
