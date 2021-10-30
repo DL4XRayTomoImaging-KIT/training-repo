@@ -1,7 +1,8 @@
 # @package _group_
 network_type: PFPN
 backbone: resnet18
-backbone_checkpoint: '/home/ws/tb0536/logs/sorting-logger/2021-03-24_21-27-09/logdir/checkpoints/best.pth'
+# backbone_checkpoint: '/home/ws/tb0536/logs/sorting-logger/2021-03-24_21-27-09/logdir/checkpoints/best.pth'
+backbone_checkpoint: '/home/ws/tb0536/logs/medaka-supervised/2021-10-29_11-43-33/logdir/checkpoints/best.pth'
 out_channels: 7
 in_channels: 1
-num_classes_cls: 1
+num_classes_cls: 256 # that's for SimCLR, for rotation it's a 1
