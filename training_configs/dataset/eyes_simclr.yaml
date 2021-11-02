@@ -1,8 +1,8 @@
 # @package _group_
 data_gatherer_name: unsupervised_target_matcher
 data_gatherer_kwargs:
-  volumes: /mnt/data/machine-learning/workshop_markup/workshop_markup/workshop_markup/proper_images/{}.tif
-  # volumes: /mnt/LSDF/projects/code-vita/Medaka/2018_11/*/eyes_scaled_0.5_8bit_cropped_slices.tif
+  # volumes: /mnt/data/machine-learning/workshop_markup/workshop_markup/workshop_markup/proper_images/{}.tif
+  volumes: /mnt/LSDF/projects/code-vita/Medaka/2018_11/*/eyes_scaled_0.5_8bit_cropped_slices.tif
 train_test_split_kwargs:
   volumes_limit: 50
 aug_name: medium_aug_rot

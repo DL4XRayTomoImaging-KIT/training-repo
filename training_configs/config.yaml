@@ -18,7 +18,7 @@ callbacks:
     # - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric': 'mean-iou', 'minimize': False}}
 training:
     verbose: True
-    num_epochs: 100
+    num_epochs: 1000
     logdir: ./logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
