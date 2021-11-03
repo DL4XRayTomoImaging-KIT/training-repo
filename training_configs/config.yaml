@@ -4,9 +4,6 @@ dataset:
 optimizer:
     lr: 3e-4
 criterion:
-    criterion_name: ContrastiveWrapper
-    criterion_hyper_parameters: 
-        n_views: 2
 runner:
     runner_name: SimCLRRunner
 logger:
@@ -18,7 +15,7 @@ callbacks:
     # - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric': 'mean-iou', 'minimize': False}}
 training:
     verbose: True
-    num_epochs: 1000
+    num_epochs: 200
     logdir: ./logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times

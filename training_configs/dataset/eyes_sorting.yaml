@@ -11,7 +11,7 @@ dataset_kwargs:
   crop_size: 512
   mode_3d: False
   one_volume_kwargs: {'use_ram': True}
-sampler_function_name: BatchViewsSampler
+sampler_function_name: ChunkedBatchIdSampler
 sampler_function_kwargs: 
   batch_size: 16
-  views_count: 2
+  sorted: True
