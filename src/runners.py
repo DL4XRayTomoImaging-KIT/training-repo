@@ -88,3 +88,25 @@ class SimCLRRunner(Runner):
             loss.backward()
             self.optimizer.step()
             self.optimizer.zero_grad()
+
+def get_displacement_error(prediction):
+    return (torch.argsort(torch.argsort(prediction.flatten()))
+            - torch.arange(len(prediction))).abs().float().mean()
+        
+
+class SortingRunner(Runner):
+    def _handle_batch(self, batch):
+        imgs = batch[0]
+
+        embeds = self.model(imgs)
+
+        loss = self.criterion(embeds)
+
+        md = get_displacement_error(embeds)
+
+        self.batch_metrics.update({'loss': loss.item(), 'displacement': md.item()})
+    
+        if self.is_train_loader:
+            loss.backward()
+            self.optimizer.step()
+            self.optimizer.zero_grad()
