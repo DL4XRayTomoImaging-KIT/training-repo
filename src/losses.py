@@ -58,6 +58,22 @@ class ConCorD25D(nn.Module):
 
         return (self.lambda_localisation * localisation + self.lambda_segmentation * segmentation), printables
 
+class SortingLoss(nn.MarginRankingLoss):
+    def forward(self, predictions):
+        
+        order = np.arange(len(predictions))
+        r, c = np.indices((len(order), len(order)))
+        r = r.flatten()
+        c = c.flatten()
+        is_descending = order[r] > order[c]
+        r,c = r[is_descending], c[is_descending]
+
+        preds_big = predictions[r]
+        preds_lit = predictions[c]
+        labels = torch.ones(len(preds_big))
+
+        return super().forward(preds_big, preds_lit, labels)
+
 import torch
 import torch.nn.functional as F
 
