@@ -6,12 +6,12 @@ train_test_split_kwargs:
   volumes_limit: 50
 aug_name: medium_aug_rot
 random_state: 42
-dataset_function_name: get_unsupervised_TVSD_datasets
+dataset_function_name: get_sorting_TVSD_datasets
 dataset_kwargs:
   crop_size: 512
   mode_3d: False
   one_volume_kwargs: {'use_ram': True}
 sampler_function_name: ChunkedBatchIdSampler
 sampler_function_kwargs: 
-  batch_size: 16
-  sorted: True
+  batch_size: 32
+  # sorted: True
