@@ -49,3 +49,15 @@ def iou_callbacks(classes):
 
 def mean_iou_callback():
     return BatchMetricCallback(prefix=f'mean-iou', metric_fn=get_iou)
+
+def get_displacement_error(prediction, labels=None):
+    predicted_order = torch.argsort(torch.argsort(prediction.flatten().detach().cpu()))
+    if labels is not None:
+        true_order = torch.argsort(torch.argsort(labels.flatten().detach().cpu()))
+    else:
+        true_order = torch.arange(len(prediction))
+
+    return (true_order - predicted_order).abs().float().mean()/len(prediction)
+
+def mean_displacement_callback():
+    return BatchMetricCallback(prefix=f'displacement', metric_fn=get_displacement_error)

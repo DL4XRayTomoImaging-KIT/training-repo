@@ -199,6 +199,12 @@ def get_unsupervised_TVSD_datasets(data_addresses, aug=None, **kwargs):
         datasets.append(VolumeSlicingDataset(image_addr, augmentations=aug, **kwargs))
     return ConcatDataset(datasets)
 
+def get_sorting_TVSD_datasets(data_addresses, aug=None, **kwargs):
+    datasets = []
+    for image_addr in data_addresses:
+        datasets.append(VolumeSlicingDataset(image_addr, augmentations=aug, class_label_2d=np.arange(len(tifffile.TiffFile(image_addr).pages)), **kwargs))
+    return ConcatDataset(datasets)
+
 def get_DLD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
     datasets = []
     for addr_batch in data_addresses:
