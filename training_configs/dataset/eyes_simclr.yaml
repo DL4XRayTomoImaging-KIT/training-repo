@@ -13,5 +13,5 @@ dataset_kwargs:
   one_volume_kwargs: {'use_ram': True}
 sampler_function_name: BatchViewsSampler
 sampler_function_kwargs: 
-  batch_size: 16
+  batch_size: 32
   views_count: 2
