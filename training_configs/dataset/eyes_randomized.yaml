@@ -12,5 +12,8 @@ dataset_kwargs:
   localised_crop: True
   label_converter: {'0': 0, '1': 1, '2': 1, '3': 0, '4': 0, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6} # legacy conversion, keeped for compatibility
 dataset_rebalance_function_name: TVSD_dataset_resample
+dataset_rebalance_kwargs:
+  multiple_datasets_mode: default
 dataloader_kwargs:
   batch_size: 16
+  drop_last: False
