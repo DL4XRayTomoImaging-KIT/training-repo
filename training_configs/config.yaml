@@ -15,17 +15,18 @@ callbacks:
     - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 100, 'metric': 'mean-iou', 'minimize': False}}
 training:
     verbose: True
-    num_epochs: 100
+    num_epochs: 50
     logdir: ./logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
+sweep_prefix:
 hydra:
     run:
         # Output directory for normal runs
         dir: /home/ws/tb0536/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
     sweep:
        # Output directory for sweep runs
-       dir: /home/ws/tb0536/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+       dir: /home/ws/tb0536/logs/medaka-supervised/${sweep_prefix}_${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
 
