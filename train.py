@@ -124,8 +124,7 @@ def get_loaders(data_gatherer_name='supervised_segmentation_target_matcher', dat
     # rebalance dataset
     if dataset_rebalance_function_name is not None:
         dataset_rebalance_kwargs = dataset_rebalance_kwargs or {}
-        train_set = getattr(src.datasets, dataset_rebalance_function_name)(train_set, **dataset_rebalance_kwargs)
-        test_set = getattr(src.datasets, dataset_rebalance_function_name)(test_set, **dataset_rebalance_kwargs)
+        train_set, test_set = getattr(src.datasets, dataset_rebalance_function_name)([train_set, test_set], **dataset_rebalance_kwargs)
     
     # select collate function
     collate_fn = getattr(src.datasets, collate_fn_name) if collate_fn_name is not None else None
