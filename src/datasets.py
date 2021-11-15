@@ -11,10 +11,10 @@ import albumentations as A
 
 
 class ChunkedBatchIdSampler:
-    def __init__(self, dset, batch_size, batch_count=None, distribution='even', temperature=None, sorted=False):
+    def __init__(self, dset, batch_size, batch_count=None, distribution='even', temperature=None, sorted=False, aligned_crossvolume=False):
         self.chunks_number = len(dset.datasets)
-        self.chunk_lengths = [len(d) for d in dset.datasets]
-        self.chunk_padding = np.cumsum([0] + self.chunk_lengths)
+        self.chunk_lengths = np.array([len(d) for d in dset.datasets])
+        self.chunk_padding = np.cumsum([0] + list(self.chunk_lengths))
 
         if distribution == 'gaussian':
             self.sampler = lambda s: np.clip(np.random.randn(s)/temperature, -0.5, 0.5) + 0.5
@@ -24,6 +24,7 @@ class ChunkedBatchIdSampler:
             raise ValueError('Unknown distribution family {distribution}')
 
         self.sorted = sorted
+        self.aligned_crossvolume = aligned_crossvolume
 
         self.batch_size = batch_size
         self.batch_count = int(len(dset) / batch_size) if batch_count is None else batch_count
@@ -36,12 +37,15 @@ class ChunkedBatchIdSampler:
         return self.batch_count
 
     def __call__(self):
-        chunk_id = np.random.randint(self.chunks_number)
+        if self.aligned_crossvolume:
+            chunk_ids = np.random.randint(self.chunks_number, size=self.batch_size)
+        else:
+            chunk_ids = np.random.randint(self.chunks_number) * np.ones(self.batch_size)
         relative_interchunk = self.sampler(self.batch_size)
-        interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_id] -1)).astype(np.int)
+        interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_ids] -1)).astype(np.int)
         if self.sorted:
             interchunk_id = np.sort(interchunk_id)
-        return interchunk_id + self.chunk_padding[chunk_id]
+        return interchunk_id + self.chunk_padding[chunk_ids]
 
 class DenseLocalisationDataset(Dataset):
     def __init__(self, volume, augmentation, mask=None, checkpoint_count=256):
