@@ -10,6 +10,8 @@ import tifffile
 import albumentations as A
 
 
+
+
 class ChunkedBatchIdSampler:
     def __init__(self, dset, batch_size, batch_count=None, distribution='even', temperature=None, sorted=False, aligned_crossvolume=False):
         self.chunks_number = len(dset.datasets)
@@ -40,7 +42,7 @@ class ChunkedBatchIdSampler:
         if self.aligned_crossvolume:
             chunk_ids = np.random.randint(self.chunks_number, size=self.batch_size)
         else:
-            chunk_ids = np.random.randint(self.chunks_number) * np.ones(self.batch_size)
+            chunk_ids = np.random.randint(self.chunks_number) * np.ones(self.batch_size, dtype=int)
         relative_interchunk = self.sampler(self.batch_size)
         interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_ids] -1)).astype(np.int)
         if self.sorted:
@@ -206,7 +208,11 @@ def get_unsupervised_TVSD_datasets(data_addresses, aug=None, **kwargs):
 def get_sorting_TVSD_datasets(data_addresses, aug=None, **kwargs):
     datasets = []
     for image_addr in data_addresses:
-        datasets.append(VolumeSlicingDataset(image_addr, augmentations=aug, class_label_2d=np.arange(len(tifffile.TiffFile(image_addr).pages)), **kwargs))
+        if (image_addr.endswith('tiff') or image_addr.endswith('tif')):
+            data = tifffile.imread(image_addr)
+        else:
+            data = inner_medload(image_addr)
+        datasets.append(VolumeSlicingDataset(data, augmentations=aug, class_label_2d=np.arange(len(data)), **kwargs))
     return ConcatDataset(datasets)
 
 def get_DLD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
