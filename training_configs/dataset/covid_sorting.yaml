@@ -1,9 +1,7 @@
 # @package _group_
 data_gatherer_name: unsupervised_target_matcher
 data_gatherer_kwargs:
-  volumes: /mnt/LSDF/projects/code-vita/Medaka/2018_11/*/scaled_0.5_8bit_cropped_slices.tif
-train_test_split_kwargs:
-  volumes_limit: 50
+  volumes: /mnt/LSDF/users/zharov/COVID19_1110/studies/prepared/{}.tiff
 aug_name: medium_aug_rot
 random_state: 42
 dataset_function_name: get_sorting_TVSD_datasets
@@ -13,5 +11,5 @@ dataset_kwargs:
   one_volume_kwargs: {'use_ram': True}
 sampler_function_name: ChunkedBatchIdSampler
 sampler_function_kwargs: 
-  batch_size: 32
+  batch_size: 16
   # sorted: True

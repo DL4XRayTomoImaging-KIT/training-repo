@@ -1,0 +1,9 @@
+# @package _global_
+logger:
+    project_name: covid-simclr
+callbacks:
+
+defaults:
+    - override /model: covid_simclr
+    - override /dataset: covid_simclr
+    - override /criterion: simclr
