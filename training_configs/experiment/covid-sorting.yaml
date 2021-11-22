@@ -1,8 +1,10 @@
 # @package _global_
 logger:
     project_name: covid-sorting
-callbacks: 
-    - {'name': 'mean_displacement_callback'}
+runner:
+  runner_name: SupervisedRunner
+# callbacks: 
+#     - {'name': 'mean_displacement_callback'}
 
 defaults:
     - override /model: covid_sorting
