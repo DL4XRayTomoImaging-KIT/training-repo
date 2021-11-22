@@ -4,7 +4,8 @@ defaults:
     - dataset:
 
 optimizer:
-    lr: 3e-4
+    optimizer_name: Adam
+    optimizer_hyper_parameters: {"lr": 3e-4}
 criterion:
     criterion_name: FocalLoss
 runner:
