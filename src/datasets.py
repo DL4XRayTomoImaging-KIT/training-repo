@@ -135,7 +135,7 @@ def convert_target(addr, converter):
     return markup
 
 def supervised_segmentation_target_matcher(volumes, targets):
-    label_ids = [os.path.basename(i).split('.')[-2] for i in glob(targets.format('*'))]
+    label_ids = [os.path.basename(i).split('.')[0] for i in glob(targets.format('*'))]
 
     if '-' in label_ids[0]:
         volume_ids = [i.split('-')[1] for i in label_ids]
