@@ -284,8 +284,8 @@ def partial_load(model, state_dict, renew_parameters=None, drop_parameters=None)
         keys_to_pop = []
         for parname in drop_parameters:
             keys_to_pop += [k for k in dp if k.startswith(parname)]
-    for key in keys_to_pop:
-        state_dict.pop(key)
+        for key in keys_to_pop:
+            state_dict.pop(key)
     dp = set(state_dict.keys())
 
     not_updated = list(mp-dp)
@@ -295,3 +295,12 @@ def partial_load(model, state_dict, renew_parameters=None, drop_parameters=None)
     state_dict.update(model_side_addendum)
     
     model.load_state_dict(state_dict)
+
+def load_to_smp(model, state_dict, renew_parameters=None, drop_parameters=None):
+    if not('fc.weight' in state_dict.keys()):
+        state_dict['fc.weight'] = None
+    if not('fc.bias' in state_dict.keys()):
+        state_dict['fc.bias'] = None
+    
+    partial_load(model, state_dict, renew_parameters, drop_parameters)
+
