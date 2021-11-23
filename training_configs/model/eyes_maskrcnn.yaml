@@ -1,5 +1,0 @@
-# @package _group_
-network_type: mask_rcnn
-encoder_name: null
-encoder_weights: null #TODO: add optional address of the old model
-classes: 7

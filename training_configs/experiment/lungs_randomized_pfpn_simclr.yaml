@@ -1,0 +1,10 @@
+# @package _global_
+logger:
+    project_name: null
+training:
+    num_epochs: 50
+sweep_prefix: 'lungs_simclr'
+
+defaults:
+    - override /model: lungs_pfpn_simclr
+    - override /dataset: lungs_randomized

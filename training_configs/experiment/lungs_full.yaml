@@ -1,0 +1,9 @@
+# @package _global_
+logger:
+    project_name: lungs-segmenting
+training:
+    num_epochs: 250
+
+defaults:
+    - override /model: lungs
+    - override /dataset: lungs

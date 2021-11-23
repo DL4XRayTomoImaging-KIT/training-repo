@@ -1,0 +1,9 @@
+# @package _global_
+logger:
+    project_name: covid-segmenting
+training:
+    num_epochs: 1250
+
+defaults:
+    - override /model: covid_large
+    - override /dataset: covid

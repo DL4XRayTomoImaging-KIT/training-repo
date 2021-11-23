@@ -1,0 +1,5 @@
+network_type: PFPN
+backbone: resnet50
+out_channels: 2
+in_channels: 1
+num_classes_cls: 256

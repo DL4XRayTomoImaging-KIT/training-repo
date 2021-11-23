@@ -1,0 +1,16 @@
+# @package _group_
+data_gatherer_kwargs:
+  targets: /mnt/LSDF/users/zharov/CTLungs/masks/{}.tiff
+  volumes: /mnt/LSDF/users/zharov/CTLungs/images/{}.tiff
+aug_name: medium_aug_rot
+random_state: 42
+dataset_kwargs:
+  crop_size: 512
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
+  localised_crop: True
+dataset_rebalance_function_name: TVSD_dataset_resample
+dataset_rebalance_kwargs:
+  multiple_datasets_mode: default
+dataloader_kwargs:
+  batch_size: 32
