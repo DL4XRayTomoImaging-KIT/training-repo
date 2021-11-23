@@ -155,9 +155,25 @@ def get_loaders(data_gatherer_name='supervised_segmentation_target_matcher', dat
     return train_loader, test_loader
 
 @cfg_ut('optimizer', 'preparing optimizer')
-def get_optimizer(model, optimizer_name, optimizer_hyper_parameters=None):
+def get_optimizer(model, optimizer_name, optimizer_hyper_parameters=None, 
+                  submodel_to_optimize=None, parameters_to_include=None, parameters_to_exclude=None):
     optimizer_hyper_parameters = optimizer_hyper_parameters or {}
-    optimizer = getattr(torch.optim, optimizer_name)(model.parameters(), **optimizer_hyper_parameters)
+
+    if submodel_to_optimize is not None:
+        if isinstance(submodel_to_optimize, str):
+            model = model[submodel_to_optimize]
+    
+    if (parameters_to_include is None) and (parameters_to_exclude is None):
+        params = model.parameters()
+    else:
+        params = model.named_parameters()
+        if parameters_to_include is not None:
+            params = {n:p for n,p in params if n.startswith(tuple(parameters_to_include))}
+        if parameters_to_exclude is not None:
+            params = {n:p for n,p in params if not n.startswith(tuple(parameters_to_exclude))}
+        params = params.values()
+
+    optimizer = getattr(torch.optim, optimizer_name)(params, **optimizer_hyper_parameters)
     optimizer.zero_grad()
 
     return optimizer
