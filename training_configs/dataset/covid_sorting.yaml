@@ -12,4 +12,5 @@ dataset_kwargs:
 sampler_function_name: ChunkedBatchIdSampler
 sampler_function_kwargs: 
   batch_size: 16
+  distribution: unique
   # sorted: True
