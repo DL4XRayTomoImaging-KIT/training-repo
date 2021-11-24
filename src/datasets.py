@@ -22,6 +22,9 @@ class ChunkedBatchIdSampler:
             self.sampler = lambda s: np.clip(np.random.randn(s)/temperature, -0.5, 0.5) + 0.5
         elif distribution == 'even':
             self.sampler = lambda s: np.random.random(s)
+        elif distribution == 'unique':
+            assert aligned_crossvolume==False, 'Only single-volume unique sampling is allowed!'
+            self.sampler = None
         else:
             raise ValueError('Unknown distribution family {distribution}')
 
@@ -43,8 +46,13 @@ class ChunkedBatchIdSampler:
             chunk_ids = np.random.randint(self.chunks_number, size=self.batch_size)
         else:
             chunk_ids = np.random.randint(self.chunks_number) * np.ones(self.batch_size, dtype=int)
-        relative_interchunk = self.sampler(self.batch_size)
-        interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_ids] -1)).astype(np.int)
+
+        if self.sampler is not None:
+            relative_interchunk = self.sampler(self.batch_size)
+            interchunk_id = (relative_interchunk * (self.chunk_lengths[chunk_ids] -1)).astype(np.int)
+        else:
+            interchunk_id = np.random.choice(self.chunk_lengths[chunk_ids[0]], self.batch_size, replace=False)
+            
         if self.sorted:
             interchunk_id = np.sort(interchunk_id)
         return interchunk_id + self.chunk_padding[chunk_ids]
