@@ -1,0 +1,10 @@
+# @package _global_
+logger:
+    project_name: null
+training:
+    num_epochs: 50
+sweep_prefix: 'covid_sorting'
+
+defaults:
+    - override /model: covid_pfpn_sorting
+    - override /dataset: covid_randomized
