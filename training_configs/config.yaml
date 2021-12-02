@@ -1,10 +1,11 @@
-model:
-checkpoint:
-dataset:
+defaults:
+    - model:
+    - checkpoint:
+    - dataset:
+    - criterion: crossentropy
+    
 optimizer:
     lr: 3e-4
-criterion:
-    criterion_name: CrossentropyND
 logger:
     project_name: fish-eye
     experiment_name: null 
