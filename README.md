@@ -7,6 +7,7 @@ Those are mainly segmentation and classification tasks for computed tomography.
 The pipeline is designed to avoid coding as much as possible during rutine operations, maintain reproducibility and ideally to be later operated by person without knowledge of DL techniques and with very basic understanding of the programming itself.
 
 ## Then How to Use It?
+
 ### Install it
 
 Firstly, run installation, which is fairly easy:
@@ -16,7 +17,7 @@ pip install -r requirements.txt
 ```
 Chances are, you anyway will stumble upon some errors with imports, please just write here or to maintainers. We will try to do our best.
 
-### Correct basic configs
+### Correct basic training configs
 
 For your first experiment to run you will need to correct basic configs.
 If you are lucky to work on internal servers of the Imaging Group, you can skip this step for first.
@@ -35,7 +36,7 @@ Modify `classes` count to fit your needs.
 1. You may need to alternate `classes` used in `iou_callbacks` setup in `callbacks` section.
 2. You may want to alter directories where logs are contained in sections `hydra.run` and `hydra.sweep`. To understand better what it means, please consult with [hydra docs](https://hydra.cc/docs/configure_hydra/workdir/).
 
-### Finally run your first experiment
+### Finally run your first training
 
 As simply (huh?) as that, just run
 ```shell
@@ -43,3 +44,29 @@ nice -n 5 python train.py +experiment=basic_experiment
 ```
 If you aren't working on the Imaging Group servers, you can omit being nice. 
 But we here count on niceness of each other.
+
+### Correct basic inference config
+
+#### inference_configs/checkpoint
+You will need to put your actual trained model address to the `checkpoint_addr` variable.
+
+#### inference_configs/dataset
+In the variable `source.main_addr` you need to set the wildcarded path leading to all your files.
+In the variable `destination.prefix` you need to set the prefix (sic!), which will be added to the original filename when saving the processed file.
+
+#### inference_configs/model
+Actually, you can copy your config from training time, since it's just the initialization of the model class.
+
+#### config.yaml
+One could use `processing.batch_size` variable to modify RAM and GPU consumption.
+
+
+
+## What Else?
+Those are mainly parameters for simple training-inference procedures. I will try to add more documentations on those stable features.
+
+If you are interested in pre-training you can check branch `medaka-pretraining`.
+If you are interested in fine-tuning you can check branch `medaka-check-pretrained`.
+If you are interested how mass processing of the samples check branch `medaka-brain_heartkidney`.
+
+
