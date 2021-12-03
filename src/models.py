@@ -141,6 +141,17 @@ class MyPersonalResnet(nn.Module):
                 x = l(x)
         return x
 
+RESNET_PARAMETERS_DICT = {'resnet50': {'block': Bottleneck, 'layers': [3, 4, 6, 3]}, 
+                          'resnet18': {'block': BasicBlock, 'layers': [2, 2, 2, 2]},
+                          'resnet34': {'block': BasicBlock, 'layers': [3, 4, 6, 3]},
+                          'resnet101': {'block': Bottleneck, 'layers': [3, 4, 23, 3]},
+                          'resnet152': {'block': Bottleneck, 'layers': [3, 8, 36, 3]}}
+
+def get_personal_resnet(resnet_type, **kwargs):
+    kwargs.update(RESNET_PARAMETERS_DICT[resnet_type])
+    return MyPersonalResnet(**kwargs)
+
+
 class EUnet(Unet):
     def __init__(self, *args, embedding_depth=512, nonlinear_heads=False, metric_head=False, **kwargs):
         real_classes = kwargs['classes']
