@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: medaka-sorting
+runner:
+  runner_name: SupervisedRunner
+# callbacks: 
+#     - {'name': 'mean_displacement_callback'}
+
+defaults:
+    - override /model: eyes_sorting_large
+    - override /dataset: eyes_sorting_250
+    - override /criterion: sorting

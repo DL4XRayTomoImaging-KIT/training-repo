@@ -1,9 +1,11 @@
-model:
-checkpoint:
-dataset:
+defaults:
+    - model:
+    - checkpoint:
+    - dataset:
+    - criterion:
+
 optimizer:
     lr: 3e-4
-criterion:
 runner:
     runner_name: SimCLRRunner
 logger:
