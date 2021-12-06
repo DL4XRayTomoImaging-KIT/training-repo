@@ -11,6 +11,7 @@ strong_aug = Compose([OneOf([A.Blur(blur_limit=15),
                              A.RandomGamma(gamma_limit=(30, 170)),
                              A.Solarize(threshold=(128-64, 128+64))], p=0.5),
                       OneOf([A.GridDistortion(distort_limit=0.5),
+                             A.ShiftScaleRotate(),
                              A.GlassBlur(max_delta=10)], p=0.5),
                       A.GaussNoise(var_limit=(50, 100), p=0.5),
                       A.ToFloat(always_apply=True)], p=0.99)
