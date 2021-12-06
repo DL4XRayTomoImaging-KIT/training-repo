@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: covid-sorting
+runner:
+  runner_name: SupervisedRunner
+# callbacks: 
+#     - {'name': 'mean_displacement_callback'}
+
+defaults:
+    - override /model: covid_sorting
+    - override /dataset: covid_sorting_harder_aug
+    - override /criterion: sorting

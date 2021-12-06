@@ -1,0 +1,15 @@
+# @package _group_
+data_gatherer_name: unsupervised_target_matcher
+data_gatherer_kwargs:
+  volumes: /mnt/LSDF/users/zharov/COVID19_1110/studies/prepared/{}.tiff
+aug_name: strong_aug
+random_state: 42
+dataset_function_name: get_unsupervised_TVSD_datasets
+dataset_kwargs:
+  crop_size: 512
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
+sampler_function_name: BatchViewsSampler
+sampler_function_kwargs: 
+  batch_size: 16
+  views_count: 2
