@@ -6,6 +6,7 @@ from torch import nn
 from einops import rearrange
 
 from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock, Bottleneck
+from torch.nn import Dropout2d
 
 import numpy as np
 
@@ -13,7 +14,7 @@ class MyPersonalResnet(nn.Module):
     def __init__(self, layers=[2,2,2,2], block=BasicBlock, num_classes=1000, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
                  norm_layer=None, strides=None, in_channels=3, normalised_output=True, 
-                 class_conversion=True, space_collapse=True, prelayers=None):
+                 class_conversion=True, space_collapse=True, prelayers=None, dropouts=None):
         super().__init__()
 
         self.prep = prelayers
@@ -25,6 +26,8 @@ class MyPersonalResnet(nn.Module):
         self.out_channels = num_classes
         self.class_conversion = class_conversion
         self.space_collapse = space_collapse
+        
+        self.dropouts = dropouts or [None] * len(layers)
 
         self.inplanes = 64
         self.dilation = 1
@@ -45,13 +48,13 @@ class MyPersonalResnet(nn.Module):
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=strides[0], padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0], stride=strides[1])
+        self.layer1 = self._make_layer(block, 64, layers[0], stride=strides[1], dropout=self.dropouts[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=strides[2],
-                                       dilate=replace_stride_with_dilation[0])
+                                       dilate=replace_stride_with_dilation[0], dropout=self.dropouts[1])
         self.layer3 = self._make_layer(block, 256, layers[2], stride=strides[3],
-                                       dilate=replace_stride_with_dilation[1])
+                                       dilate=replace_stride_with_dilation[1], dropout=self.dropouts[2])
         self.layer4 = self._make_layer(block, 512, layers[3], stride=strides[4],
-                                       dilate=replace_stride_with_dilation[2])
+                                       dilate=replace_stride_with_dilation[2], dropout=self.dropouts[3])
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
@@ -77,7 +80,7 @@ class MyPersonalResnet(nn.Module):
                 elif isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
-    def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
+    def _make_layer(self, block, planes, blocks, stride=1, dilate=False, dropout=None):
         norm_layer = self._norm_layer
         downsample = None
         previous_dilation = self.dilation
@@ -98,6 +101,9 @@ class MyPersonalResnet(nn.Module):
             layers.append(block(self.inplanes, planes, groups=self.groups,
                                 base_width=self.base_width, dilation=self.dilation,
                                 norm_layer=norm_layer))
+        
+        if dropout is not None:
+            layers.append(Dropout2d(dropout))
 
         return nn.Sequential(*layers)
 
