@@ -3,10 +3,8 @@ defaults:
     - checkpoint:
     - dataset:
     - criterion: crossentropy
+    - optimizer: adam
     
-optimizer:
-    optimizer_name: Adam
-    optimizer_hyper_parameters: {"lr": 3e-4}
 logger:
     project_name: fish-eye
     experiment_name: null 
