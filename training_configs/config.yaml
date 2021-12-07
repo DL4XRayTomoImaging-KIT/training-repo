@@ -9,6 +9,9 @@ optimizer:
 criterion:
     criterion_name: CrossentropyND
 runner:
+optimizer:
+    optimizer_name: Adam
+    optimizer_hyper_parameters: {"lr": 3e-4}
 logger:
     project_name: point-vicreg
     experiment_name: null 
