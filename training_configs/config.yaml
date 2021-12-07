@@ -1,6 +1,9 @@
-model:
-checkpoint:
-dataset:
+defaults:
+    - model:
+    - checkpoint:
+    - dataset:
+    - _self_
+    
 optimizer:
     lr: 3e-4
 criterion:

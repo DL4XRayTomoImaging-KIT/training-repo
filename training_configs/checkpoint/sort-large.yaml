@@ -1,0 +1,6 @@
+# @package _group_
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/2021-11-24_21-17-38/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'
+load_function: 'load_to_smp'
+model_key: 'encoder'
+drop_parameters: [fc.0, fc.1]

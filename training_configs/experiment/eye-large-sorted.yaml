@@ -1,0 +1,8 @@
+# @package _global_
+logger:
+    project_name: medaka-eye-large
+
+defaults:
+    - override /model: eyes_large
+    - override /checkpoint: sort-large
+    - override /dataset: eyes
