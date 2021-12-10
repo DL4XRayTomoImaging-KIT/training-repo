@@ -1,0 +1,13 @@
+# @package _global_
+logger:
+    project_name: medaka-eye-large
+
+defaults:
+    - override /model: eyes_large_deeplab
+    - override /checkpoint: sort-large
+    - override /dataset: eyes
+
+dataset:
+    dataset_rebalance_kwargs:
+        segmented_part: 0.05
+        multiple_datasets_mode: default
