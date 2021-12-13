@@ -11,3 +11,6 @@ dataset:
     dataset_rebalance_kwargs:
         segmented_part: 0.05
         multiple_datasets_mode: default
+
+training:
+    num_epochs: 100
