@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: null
+sweep_prefix: deeplab_scratch
+
+defaults:
+    - override /model: eyes_large_deeplab
+    - override /dataset: eyes_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        multiple_datasets_mode: default
