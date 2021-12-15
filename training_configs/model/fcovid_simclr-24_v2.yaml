@@ -1,0 +1,7 @@
+# @package _group_
+network_type: PFPN
+backbone: resnet18
+backbone_checkpoint: '/home/ws/tb0536/logs/covid/2021-12-14_12-02-21/logdir/checkpoints/best.pth'
+out_channels: 2
+in_channels: 1
+num_classes_cls: 256
