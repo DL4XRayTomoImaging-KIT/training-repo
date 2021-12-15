@@ -1,0 +1,14 @@
+# @package _global_
+logger:
+    project_name: null
+runner:
+  runner_name: SupervisedRunner
+# callbacks: 
+#     - {'name': 'mean_displacement_callback'}
+
+defaults:
+    - override /model: eyes_sorting
+    - override /dataset: eyes_failtest
+    - override /criterion: sorting
+training:
+    num_epochs: 2000
