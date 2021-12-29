@@ -1,9 +1,9 @@
 # @package _group_
 data_gatherer_kwargs:
-  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eyes_to_train/{}.nii
-  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/proper_images/{}.tif
-  # targets: /mnt/data/machine-learning/workshop_markup/workshop_markup/workshop_markup/eyes_to_train/{}.nii
-  # volumes: /mnt/data/machine-learning/workshop_markup/workshop_markup/workshop_markup/proper_images/{}.tif
+  # targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eyes_to_train/{}.nii
+  # volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/proper_images/{}.tif
+  targets: /mnt/data/medaka/eyes_to_train/{}.nii
+  volumes: /mnt/data/medaka/proper_images/{}.tif
 aug_name: medium_aug_rot
 dataset_kwargs:
   crop_size: 512
@@ -16,4 +16,4 @@ dataset_rebalance_kwargs:
   multiple_datasets_mode: default
 dataloader_kwargs:
   batch_size: 16
-  drop_last: False
+  drop_last: True
