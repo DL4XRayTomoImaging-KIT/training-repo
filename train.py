@@ -1,52 +1,14 @@
 # imports
-
-import sys, os
-
-import cv2
-cv2.setNumThreads(0)
-cv2.ocl.setUseOpenCL(False)
-
-import numpy as np
-import json
-
-from tqdm.auto import tqdm
-from matplotlib import pyplot as plt
-
-from glob import glob
-
-from sklearn.model_selection import train_test_split
-
-#from src.datasets import MultiTiffSegmentation, ExpandedPaddedMarkup, Tiff3D
-#from src.predefined_augmentations import light_aug
-
-from medpy.io import load as medload
-
-#from src.lovasz_losses import lovasz_softmax, iou
-#
-#from src.segmenting_helpers import get_weighted_sampler_by_mark, get_weighted_sampler_by_sum
+import torch
+from torch.utils.data import DataLoader
 
 import torch
-from torch.utils.data import DataLoader, ConcatDataset, WeightedRandomSampler, Subset
-from torch.utils.data import DistributedSampler
 
-
-import torch
-from torch import nn
-
-import kornia
-
-import wandb
-
-from catalyst.dl import Runner, SupervisedRunner
-from catalyst import dl, metrics
-from catalyst.contrib.callbacks.wandb_logger import WandbLogger
-from catalyst.callbacks.metric import BatchMetricCallback
-from collections import defaultdict
-
-from torch.nn import NLLLoss2d, CrossEntropyLoss
+from catalyst.loggers.wandb import WandbLogger
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
+from src.hydra_helpers import cfg_ut, check_exclusion
 
 import src.augmentations
 import src.models
@@ -55,11 +17,7 @@ import src.losses
 import src.callbacks
 import src.runners
 
-from functools import partial
 
-from skimage.measure import label
-
-from src.hydra_helpers import cfg_ut, check_exclusion
 
 # definitions
 
@@ -187,15 +145,14 @@ def get_criterion(criterion_name, criterion_hyper_parameters=None):
 @cfg_ut('logger', 'initializing logger')
 def get_logger(project_name, log_cfg, experiment_name=None):
     if project_name is not None:
-        wanlogger = WandbLogger(metric_names=None, project=project_name, name=experiment_name, config=log_cfg)
-        return wanlogger
+        wanlogger = WandbLogger(project=project_name, name=experiment_name, config=log_cfg)
+        return {'wandb': wanlogger}
+    else:
+        return None
 
 @cfg_ut('callbacks', 'getting callbacks', force=True)
-def get_callbacks(logger, *args):
-    callbacks = []
-    if logger is not None:
-        callbacks.append(logger)
-    
+def get_callbacks(*args):
+    callbacks = [] 
     for callbac_config in args:
         kwgs = (callbac_config['kwargs'] or {})if 'kwargs' in  callbac_config.keys() else {}
         new_callback = getattr(src.callbacks, callbac_config['name'])(**kwgs)
@@ -209,11 +166,14 @@ def get_callbacks(logger, *args):
 
 @cfg_ut('runner', 'initializing runner', force=True)
 def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
+    kwgs = {'input_key':"features", 'output_key': "logits", 'target_key': "targets", 'loss_key': "loss"}
     runner_kwargs = runner_kwargs or {}
-    return getattr(src.runners, runner_name)(**runner_kwargs)
+    kwgs.update(runner_kwargs)
+    
+    return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, train_loader, test_loader, callbacks, **kwargs):
+def do_training(runner, model, criterion, optimizer, train_loader, test_loader, logger, callbacks, **kwargs):
     torch.backends.cudnn.benchmark = True
 
     runner.train(
@@ -222,6 +182,7 @@ def do_training(runner, model, criterion, optimizer, train_loader, test_loader, 
         optimizer=optimizer,
         loaders={"train": train_loader, "valid": test_loader},
         callbacks=callbacks,
+        loggers=logger,
         **kwargs)
 
 @hydra.main(config_path='training_configs', config_name="config")
@@ -238,9 +199,9 @@ def overall_training(cfg : DictConfig) -> None:
         optimizer = get_optimizer(model, cfg=cfg)
         criterion = get_criterion(cfg=cfg)
         logger = get_logger(cfg=cfg, log_cfg=cfg)
-        callbacks = get_callbacks(logger, cfg=cfg)
+        callbacks = get_callbacks(cfg=cfg)
         runner = get_runner(cfg=cfg)
-        do_training(runner, model, criterion, optimizer, train_loader, test_loader, callbacks, cfg=cfg)
+        do_training(runner, model, criterion, optimizer, train_loader, test_loader, logger, callbacks, cfg=cfg)
 
 if __name__ == "__main__":
     overall_training()
