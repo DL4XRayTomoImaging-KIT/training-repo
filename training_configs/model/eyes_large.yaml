@@ -1,4 +1,3 @@
-# @package _group_
 network_type: Unet
 encoder_name: resnet152
 classes: 7
