@@ -1,3 +1,4 @@
+loaders_function: triple_loaders
 data_gatherer_kwargs:
   # targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eyes_to_train/{}.nii
   # volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/proper_images/{}.tif

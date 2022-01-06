@@ -249,7 +249,7 @@ def multiple_dataset_resample(resampling_function):
 
 @multiple_dataset_resample
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
-    is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
+    is_marked = np.concatenate([d.segmentation.data.sum((1,2)) > 0 for d in dataset.datasets])
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):
