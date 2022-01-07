@@ -117,8 +117,14 @@ def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
     return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, **kwargs):
+def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, **kwargs):
     torch.backends.cudnn.benchmark = True
+
+    if (num_steps is not None) and ('num_epochs' in kwargs.keys()) and (kwargs['num_epochs'] is not None):
+        raise Exception('both `num_epochs` and `num_steps` should not be configured together!')
+    
+    if num_steps is not None:
+        kwargs['num_epochs'] = num_steps // len(loaders['train'])
 
     runner.train(
         model=model,
