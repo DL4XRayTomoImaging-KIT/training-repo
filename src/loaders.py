@@ -58,4 +58,4 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
     train_loader = DataLoader(train_set, collate_fn=collate_fn, **train_loader_kw)
     test_loader = DataLoader(test_set, collate_fn=collate_fn, **test_loader_kw)
 
-    return {'train': train_loader, 'valid': test_loader}
+    return {'train': train_loader, 'valid': test_loader}, None
