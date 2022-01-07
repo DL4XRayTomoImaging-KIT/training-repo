@@ -117,17 +117,40 @@ def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
     return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, **kwargs):
+def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, **kwargs):
     torch.backends.cudnn.benchmark = True
+
+    train_stage_loaders, inference_stage_loaders = loaders
+
+    if (num_steps is not None) and ('num_epochs' in kwargs.keys()) and (kwargs['num_epochs'] is not None):
+        raise Exception('both `num_epochs` and `num_steps` should not be configured together!')
+    
+    if num_steps is not None:
+        kwargs['num_epochs'] = num_steps // len(train_stage_loaders['train'])
 
     runner.train(
         model=model,
         criterion=criterion,
         optimizer=optimizer,
-        loaders=loaders,
+        loaders=train_stage_loaders,
         callbacks=callbacks,
         loggers=logger,
         **kwargs)
+    
+    if inference_stage_loaders is not None:
+        assert len([i for i in inference_stage_loaders.keys() if i.startswith('train')]) == 0, 'There should be no train datasets on the last evaluation step!'
+        
+        if 'valid' not in inference_stage_loaders.keys():
+            inference_stage_loaders['valid'] = train_stage_loaders['valid']
+
+        kwargs['num_epochs'] = 1
+        kwargs['verbose'] = True
+        runner.train(
+            model=model,
+            criterion=criterion,
+            loaders=inference_stage_loaders,
+            callbacks=callbacks,
+            **kwargs)
 
 @hydra.main(config_path='training_configs', config_name="config")
 def overall_training(cfg : DictConfig) -> None:

@@ -59,7 +59,7 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
     train_loader = DataLoader(train_set, collate_fn=collate_fn, **train_loader_kw)
     test_loader = DataLoader(test_set, collate_fn=collate_fn, **test_loader_kw)
 
-    return {'train': train_loader, 'valid': test_loader}
+    return {'train': train_loader, 'valid': test_loader}, None
 
 def triple_presliced_loaders(paths,
                 train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
@@ -117,7 +117,7 @@ def triple_presliced_loaders(paths,
     valid_loader = DataLoader(valid_set, **test_loader_kw)
     test_loader = DataLoader(test_set, **test_loader_kw)
 
-    return {'train': train_loader, 'valid': valid_loader, 'valid_extrapolation': test_loader}
+    return {'train': train_loader, 'valid': valid_loader}, {'infer_extrapolation': test_loader}
 
 def triple_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
                 train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
@@ -169,4 +169,4 @@ def triple_loaders(data_gatherer_name='supervised_segmentation_target_matcher', 
     valid_loader = DataLoader(valid_set, collate_fn=collate_fn, **test_loader_kw)
     test_loader = DataLoader(test_set, collate_fn=collate_fn, **test_loader_kw)
 
-    return {'train': train_loader, 'valid': valid_loader, 'valid_extrapolation': test_loader}
+    return {'train': train_loader, 'valid': valid_loader}, {'infer_extrapolation': test_loader}
