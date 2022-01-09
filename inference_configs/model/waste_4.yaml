@@ -1,0 +1,5 @@
+# @package _group_
+network_type: Unet
+encoder_name: resnet50
+classes: 5
+in_channels: 3
