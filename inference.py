@@ -5,7 +5,7 @@ from train import get_model, load_weights
 import numpy as np
 from functools import partial
 from src.augmentations import none_aug
-from flexpand import Expander
+from flexpand import Expander, Matcher
 import os
 import tifffile
 
@@ -72,20 +72,10 @@ def generate_in_out_pairs(expander_config, saving_config):
     exp = Expander()
     in_list = exp(**expander_config)
 
-    out_list = []
-    for old_name in in_list:
-        if ('name' in saving_config) and (saving_config['name'] is not None):
-            head, tail = os.path.split(old_name)
-            tail = saving_config['name']+ '.' + tail.split('.')[-1]
-            out_list.append(os.path.join(head, tail))
-        elif ('prefix' in saving_config) and (saving_config['prefix'] is not None):
-            head, tail = os.path.split(old_name)
-            tail = saving_config['prefix']+ '_' + tail
-            out_list.append(os.path.join(head, tail))
-        else:
-            raise ValueError('Either name or prefix should be configured for saving. Overwrite was never an option!')
-    
-    return list(zip(in_list, out_list))
+    mtch = Matcher()
+    pairs_list = mtch(in_list, **saving_config)
+
+    return pairs_list
 
 def load_process_save(segmenter, input_addr, output_addr):
     img = tifffile.imread(input_addr)
