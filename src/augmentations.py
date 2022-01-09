@@ -55,3 +55,19 @@ medium_aug_rot = Compose([OneOf([A.Blur(blur_limit=5),
                              A.GlassBlur(max_delta=5)], p=0.5),
                       A.GaussNoise(var_limit=(20, 50), p=0.5),
                       A.ToFloat(always_apply=True)], p=0.99)
+
+natural_image = Compose([
+                     A.CropNonEmptyMaskIfExists(512, 512, always_apply=True),
+                     OneOf([A.Blur(blur_limit=5),
+                             A.MedianBlur(blur_limit=5),
+                             A.MotionBlur(blur_limit=5)], p=0.5),
+                      OneOf([A.CLAHE(),
+                             A.Equalize()], p=0.2),
+                      OneOf([A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2),
+                             A.RandomGamma(gamma_limit=(90, 110))], p=0.5),
+                      OneOf([A.GridDistortion(distort_limit=0.2),
+                             A.ShiftScaleRotate(),
+                             A.GlassBlur(max_delta=5)], p=0.5),
+                      A.GaussNoise(var_limit=(20, 50), p=0.5),
+                      A.ShiftScaleRotate(),
+                      A.ToFloat(always_apply=True)], p=0.99)

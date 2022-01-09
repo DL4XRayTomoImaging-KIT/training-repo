@@ -7,6 +7,7 @@ from medpy.io import load as medload
 from glob import glob
 import os
 import tifffile
+import re
 
 def convert_target(addr, converter):
     if isinstance(list(converter.keys())[0], str):
@@ -26,6 +27,11 @@ def supervised_segmentation_target_matcher(volumes, targets):
     
     return [volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]
 
+def image_folder_segmentation_matcher(images, targets):
+    all_ids = [re.findall(images.format('(.*)'), i)[0] for i in glob(images.format('*'))]
+
+    return [images.format(i) for i in all_ids], [targets.format(i) for i in all_ids]
+
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     volumes_limit = volumes_limit or len(gathered_data[0])
     train_data, test_data = train_test_split(list(zip(*gathered_data))[:volumes_limit], random_state=random_state, train_size=train_volumes)
@@ -42,6 +48,44 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
         datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
                                              **kwargs))
     return ConcatDataset(datasets)
+
+from skimage.io import imread, imread_collection
+
+class ImagePairsSegmentationDataset(Dataset):
+    def __init__(self, images, targets, augmentations=None, use_ram=True):
+        self.use_ram = use_ram
+        
+        self.images = list(images)
+        self.masks = list(targets)
+
+        self.aug = augmentations
+    
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, id):
+        img = self.images[id]
+        msk = self.masks[id]
+
+        if isinstance(img, str):
+            img = imread(img)
+            msk = np.load(msk)
+            if self.use_ram:
+                self.images[id] = img
+                self.masks[id] = msk
+
+        augged = self.aug(image=img, mask=msk)
+        img = augged['image']
+        msk = augged['mask']
+
+        img = np.moveaxis(img, -1, 0)
+        msk = msk[None, ...]
+
+        return img, msk
+
+def get_imagepairs_dataset(data_addresses, aug=None):
+    return ImagePairsSegmentationDataset(*list(zip(*data_addresses)), augmentations=aug)
+
 
 def adaptive_choice(choose_from, choice_count):
     if choice_count <= len(choose_from):

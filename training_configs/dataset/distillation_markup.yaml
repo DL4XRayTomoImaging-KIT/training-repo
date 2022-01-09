@@ -1,0 +1,9 @@
+data_gatherer_name: image_folder_segmentation_matcher
+data_gatherer_kwargs:
+  targets: /home/ws/tb0536/logs/waste/data/expanded_markup_v2/{}.npy
+  images: /home/ws/tb0536/logs/waste/data/expanded_images_v2/{}.jpg
+aug_name: natural_image
+random_state: 42
+dataset_function_name: get_imagepairs_dataset
+dataloader_kwargs:
+  batch_size: 64
