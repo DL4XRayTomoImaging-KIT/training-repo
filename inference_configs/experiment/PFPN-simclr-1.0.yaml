@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+    - override /model: eyes_pfpn_1
+    - override /checkpoint: PFPN-simclr-1.0
+    - override /dataset: visual_test
+
+dataset:
+  destination:
+    folder: '/mnt/LSDF/users/zharov/medakas_segmentation_for_comparison/PFPN-simclr-1.0'
+

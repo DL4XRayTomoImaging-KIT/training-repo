@@ -1,0 +1,3 @@
+# @package _group_
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/deeplab_sorted_2021-12-13_19-31-59/3_+dataset.dataset_rebalance_kwargs.segmented_part=1.0,+experiment=eye-large-sorted-randomized,attempts=1/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

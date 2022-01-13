@@ -1,0 +1,3 @@
+# @package _group_
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/sorting_2021-11-10_08-34-26/5_+dataset.dataset_rebalance_kwargs.segmented_part=0.1,+dataset=eyes_randomized,+model=eyes_pfpn_sorting,attempts=1,logger.project_name=null,sweep_prefix=sorting/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

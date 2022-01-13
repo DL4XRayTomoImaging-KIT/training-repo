@@ -1,0 +1,10 @@
+# @package _global_
+defaults:
+    - override /model: eyes_pfpn_256
+    - override /checkpoint: PFPN-sorting-0.1
+    - override /dataset: visual_test
+
+dataset:
+  destination:
+    folder: '/mnt/LSDF/users/zharov/medakas_segmentation_for_comparison/PFPN-sorting-0.1'
+

@@ -1,6 +1,8 @@
-model:
-checkpoint:
+defaults:
+    - model:
+    - checkpoint:
+    - dataset:
+
 processing:
-  batch_size: 32
+  batch_size: 16
   dtype: 'uint8'
-dataset:

@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+    - override /model: eyes_deeplab
+    - override /checkpoint: DLV3-scratch-0.05
+    - override /dataset: visual_test
+
+dataset:
+  destination:
+    folder: '/mnt/LSDF/users/zharov/medakas_segmentation_for_comparison/DLV3-scratch-0.05'
+processing:
+  batch_size: 8
+
