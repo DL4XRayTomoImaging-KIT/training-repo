@@ -17,6 +17,7 @@ import src.losses
 import src.callbacks
 import src.runners
 
+from time import time
 
 
 # definitions
@@ -117,7 +118,7 @@ def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
     return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, **kwargs):
+def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, seed=None, **kwargs):
     torch.backends.cudnn.benchmark = True
 
     train_stage_loaders, inference_stage_loaders = loaders
@@ -135,6 +136,7 @@ def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks,
         loaders=train_stage_loaders,
         callbacks=callbacks,
         loggers=logger,
+        seed=seed,
         **kwargs)
     
     if inference_stage_loaders is not None:
@@ -150,7 +152,14 @@ def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks,
             criterion=criterion,
             loaders=inference_stage_loaders,
             callbacks=callbacks,
+            seed=seed,
             **kwargs)
+
+def get_seed(cfg):
+    if ('seed' in cfg.keys()) and (cfg['seed'] is not None):
+        return cfg['seed']
+    else:
+        return int(time())
 
 @hydra.main(config_path='training_configs', config_name="config")
 def overall_training(cfg : DictConfig) -> None:
@@ -160,15 +169,16 @@ def overall_training(cfg : DictConfig) -> None:
         print(OmegaConf.to_yaml(cfg['model']))
         print(OmegaConf.to_yaml(cfg['training']))
     else:
+        seed = get_seed(cfg=cfg)
         model = get_model(cfg=cfg)
         load_weights(model, cfg=cfg)
-        loaders = get_loaders(cfg=cfg)
+        loaders = get_loaders(cfg=cfg, seed=seed)
         optimizer = get_optimizer(model, cfg=cfg)
         criterion = get_criterion(cfg=cfg)
         logger = get_logger(cfg=cfg, log_cfg=cfg)
         callbacks = get_callbacks(cfg=cfg)
         runner = get_runner(cfg=cfg)
-        do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, cfg=cfg)
+        do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, cfg=cfg, seed=seed)
 
 if __name__ == "__main__":
     overall_training()
