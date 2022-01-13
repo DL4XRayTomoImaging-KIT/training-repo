@@ -62,7 +62,7 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
     return {'train': train_loader, 'valid': test_loader}, None
 
 def triple_presliced_loaders(paths,
-                train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
+                train_test_split_function='sklearn_train_test_split', seed=None, train_test_split_kwargs=None,
                 aug_name='none_aug',
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataloader_kwargs=None):       
@@ -85,9 +85,10 @@ def triple_presliced_loaders(paths,
 
 
     # create train-test split, limiting the overall loading capacity
-    data_splitter_kwargs = {'random_state': random_state}
+    data_splitter_kwargs = {'random_state': seed}
     data_splitter_kwargs.update(train_test_split_kwargs or {})
     train_data, test_data = getattr(datasets, train_test_split_function)(gathered_data, **data_splitter_kwargs)
+    print('SpecLogOccSearch> ', [os.path.basename(i[0]) for i in train_data])
 
     valid_data = [(i[0], i[1]) for i in train_data] # interpolation
     train_data = [(i[0], i[2]) for i in train_data] # training
@@ -99,13 +100,14 @@ def triple_presliced_loaders(paths,
     # construct train and test datasets itself
     dataset_kwargs = dataset_kwargs or {}
     train_set = getattr(datasets, dataset_function_name)(train_data, aug=aug, **dataset_kwargs)
-    valid_set = getattr(datasets, dataset_function_name)(valid_data, aug=aug, **dataset_kwargs)
-    test_set = getattr(datasets, dataset_function_name)(test_data, aug=aug, **dataset_kwargs)
+    valid_set = getattr(datasets, dataset_function_name)(valid_data, aug=augmentations.none_aug, **dataset_kwargs)
+    test_set = getattr(datasets, dataset_function_name)(test_data, aug=augmentations.none_aug, **dataset_kwargs)
 
     # rebalance dataset
-    train_set, valid_set, test_set = datasets.TVSD_dataset_resample([train_set, valid_set, test_set], empty_part=0, multiple_datasets_mode='first')
+    small_valid_set = datasets.TVSD_dataset_resample([valid_set], segmented_part=0.1, empty_part=0)[0]
+    train_set, valid_set, test_set = datasets.TVSD_dataset_resample([train_set, valid_set, test_set], empty_part=0, multiple_datasets_mode='all')
     
-    train_loader_kw = {'drop_last': True, 'shuffle': True, 'num_workers': 16, 'pin_memory': True}
+    train_loader_kw = {'drop_last': False, 'shuffle': True, 'num_workers': 16, 'pin_memory': True}
     test_loader_kw = {'drop_last': True, 'shuffle': True, 'num_workers': 16, 'pin_memory': True}
 
     if dataloader_kwargs is not None:
@@ -116,11 +118,12 @@ def triple_presliced_loaders(paths,
     train_loader = DataLoader(train_set, **train_loader_kw)
     valid_loader = DataLoader(valid_set, **test_loader_kw)
     test_loader = DataLoader(test_set, **test_loader_kw)
+    small_test_loader = DataLoader(small_valid_set, **test_loader_kw)
 
-    return {'train': train_loader, 'valid': valid_loader}, {'infer_extrapolation': test_loader}
+    return {'train': train_loader, 'valid': small_test_loader}, {'infer_extrapolation': test_loader, 'infer_interpolation': valid_loader}
 
 def triple_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
-                train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
+                train_test_split_function='sklearn_train_test_split', seed=None, train_test_split_kwargs=None,
                 aug_name='none_aug',
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
@@ -132,7 +135,7 @@ def triple_loaders(data_gatherer_name='supervised_segmentation_target_matcher', 
     gathered_data = getattr(datasets, data_gatherer_name)(**data_gatherer_kwargs)
 
     # create train-test split, limiting the overall loading capacity
-    data_splitter_kwargs = {'random_state': random_state}
+    data_splitter_kwargs = {'random_state': seed}
     data_splitter_kwargs.update(train_test_split_kwargs or {})
     train_data, test_data = getattr(datasets, train_test_split_function)(gathered_data, **data_splitter_kwargs)
 
