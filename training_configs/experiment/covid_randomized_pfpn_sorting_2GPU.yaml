@@ -2,7 +2,8 @@
 logger:
     project_name: null
 training:
-    num_epochs: 50
+    num_epochs: null
+    num_steps: 7500
 sweep_prefix: 'covid_sorting_2GPU'
 
 defaults:

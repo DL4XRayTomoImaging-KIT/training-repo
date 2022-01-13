@@ -1,4 +1,4 @@
-checkpoint_addr: '/home/ws/tb0536/logs/covid/2021-11-18_15-55-43/logdir/checkpoints/best.pth'
+checkpoint_addr: '/home/ws/tb0536/logs/covid/2021-11-25_21-11-24/logdir/checkpoints/best.pth'
 checkpoint_key: 'model_state_dict'
 load_function: 'load_to_smp'
 model_key: 'encoder'

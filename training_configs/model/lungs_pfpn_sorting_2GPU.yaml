@@ -1,4 +1,3 @@
-# @package _group_
 network_type: PFPN
 backbone: resnet18
 backbone_checkpoint: '/home/ws/tb0536/logs/covid/2021-11-25_21-11-24/logdir/checkpoints/best.pth'

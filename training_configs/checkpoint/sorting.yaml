@@ -1,4 +1,3 @@
-# @package _group_
 checkpoint_addr: '/home/ws/tb0536/logs/covid/2021-11-18_16-41-57/logdir/checkpoints/best.pth'
 checkpoint_key: 'model_state_dict'
 load_function: 'load_to_smp'

@@ -1,4 +1,3 @@
-# @package _group_
 data_gatherer_kwargs:
   targets: /mnt/LSDF/users/zharov/CTLungs/masks/{}.tiff
   volumes: /mnt/LSDF/users/zharov/CTLungs/images/{}.tiff
