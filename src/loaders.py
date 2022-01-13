@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 import os
 
 def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
-                train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
+                train_test_split_function='sklearn_train_test_split', seed=None, train_test_split_kwargs=None,
                 aug_name='none_aug',
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
@@ -17,7 +17,7 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
     gathered_data = getattr(datasets, data_gatherer_name)(**data_gatherer_kwargs)
 
     # create train-test split, limiting the overall loading capacity
-    data_splitter_kwargs = {'random_state': random_state}
+    data_splitter_kwargs = {'random_state': seed}
     data_splitter_kwargs.update(train_test_split_kwargs or {})
     train_data, test_data = getattr(datasets, train_test_split_function)(gathered_data, **data_splitter_kwargs)
 
