@@ -1,5 +1,10 @@
-from catalyst.dl import *
+# from catalyst.dl import *
 from omegaconf.listconfig import ListConfig
+
+from catalyst.metrics._functional_metric import FunctionalBatchMetric
+from catalyst.metrics import *
+from catalyst.dl import EarlyStoppingCallback, CheckpointCallback # for forwarding to train
+from catalyst.callbacks.metric import FunctionalBatchMetricCallback
 
 from functools import partial
 
@@ -44,11 +49,13 @@ def iou_callbacks(classes):
 
     callbacks = []
     for l in classes:
-        callbacks.append(BatchMetricCallback(prefix=f'iou-{l}', metric_fn=partial(get_iou, label_to_calculate=l)))
+        metric = FunctionalBatchMetric(metric_key=f'iou-{l}', metric_fn=partial(get_iou, label_to_calculate=l))
+        callbacks.append(FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets'))
     return callbacks
 
 def mean_iou_callback():
-    return BatchMetricCallback(prefix=f'mean-iou', metric_fn=get_iou)
+    metric = FunctionalBatchMetric(metric_key=f'mean-iou', metric_fn=get_iou)
+    return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
 
 
 def dice(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
@@ -89,8 +96,11 @@ def dice_callbacks(classes):
 
     callbacks = []
     for l in classes:
-        callbacks.append(BatchMetricCallback(prefix=f'dice-{l}', metric_fn=partial(get_dice, label_to_calculate=l)))
+        metric = FunctionalBatchMetric(metric_key=f'dice-{l}', metric_fn=get_iou)
+        callbacks.append(FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets'))
     return callbacks
 
 def mean_dice_callback():
-    return BatchMetricCallback(prefix=f'mean-dice', metric_fn=get_dice)
+    metric = FunctionalBatchMetric(metric_key=f'mean-dice', metric_fn=get_dice)
+    return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
+    

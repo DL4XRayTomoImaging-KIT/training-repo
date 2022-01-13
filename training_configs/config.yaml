@@ -2,13 +2,9 @@ defaults:
     - model:
     - checkpoint:
     - dataset:
-
-optimizer:
-    optimizer_name: Adam
-    optimizer_hyper_parameters: {"lr": 3e-4}
-criterion:
-    criterion_name: CrossentropyND
-runner:
+    - criterion: crossentropy
+    - optimizer: adam
+    
 logger:
     project_name: point-vicreg
     experiment_name: null 
@@ -17,7 +13,8 @@ callbacks:
     - {'name': 'mean_iou_callback'}
     - {'name': 'dice_callbacks', 'kwargs': {'classes': [0, 1]}}
     - {'name': 'mean_dice_callback'}
-    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 100, 'metric': 'mean-iou', 'minimize': False}}
+    # - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric_key': 'mean-iou', 'loader_key': 'valid', 'minimize': False}}
+    - {'name': 'CheckpointCallback', 'kwargs': {'logdir': './logdir/checkpoints', 'loader_key': 'valid', 'metric_key': 'mean-iou', 'minimize': False, 'resume': False, 'load_on_stage_end': 'last', 'save_n_best': 0}}
 training:
     verbose: True
     num_epochs: 50

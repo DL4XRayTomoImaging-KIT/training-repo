@@ -1,4 +1,4 @@
-from catalyst.dl.runner import *
+from catalyst.runners.runner import *
 import numpy as np
 import torch
 from einops import rearrange
