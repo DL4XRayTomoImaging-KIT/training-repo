@@ -3,7 +3,7 @@ logger:
     project_name: null
 training:
     num_epochs: null
-    num_steps: 7500
+    num_steps: 3500
 sweep_prefix: 'lungs_scratch_2GPU_deeplab'
 
 defaults:
