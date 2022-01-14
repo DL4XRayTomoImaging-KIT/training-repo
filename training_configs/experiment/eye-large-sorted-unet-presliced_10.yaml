@@ -1,0 +1,13 @@
+# @package _global_
+logger:
+    project_name: null
+sweep_prefix: unet_presliced_10
+
+defaults:
+    - override /model: eyes_large
+    - override /checkpoint: sort-large
+    - override /dataset: eyes_triple_10
+    
+training:
+    num_steps: 1000
+    num_epochs: null

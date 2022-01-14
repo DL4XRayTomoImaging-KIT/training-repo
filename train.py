@@ -1,65 +1,24 @@
 # imports
-
-import sys, os
-
-import cv2
-cv2.setNumThreads(0)
-cv2.ocl.setUseOpenCL(False)
-
-import numpy as np
-import json
-
-from tqdm.auto import tqdm
-from matplotlib import pyplot as plt
-
-from glob import glob
-
-from sklearn.model_selection import train_test_split
-
-#from src.datasets import MultiTiffSegmentation, ExpandedPaddedMarkup, Tiff3D
-#from src.predefined_augmentations import light_aug
-
-from medpy.io import load as medload
-
-#from src.lovasz_losses import lovasz_softmax, iou
-#
-#from src.segmenting_helpers import get_weighted_sampler_by_mark, get_weighted_sampler_by_sum
+import torch
+from torch.utils.data import DataLoader
 
 import torch
-from torch.utils.data import DataLoader, ConcatDataset, WeightedRandomSampler, Subset
-from torch.utils.data import DistributedSampler
 
-
-import torch
-from torch import nn
-
-import kornia
-
-import wandb
-
-from catalyst.dl import Runner, SupervisedRunner
-from catalyst import dl, metrics
-from catalyst.contrib.callbacks.wandb_logger import WandbLogger
-from catalyst.callbacks.metric import BatchMetricCallback
-from collections import defaultdict
-
-from torch.nn import NLLLoss2d, CrossEntropyLoss
+from catalyst.loggers.wandb import WandbLogger
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
+from src.hydra_helpers import cfg_ut, check_exclusion
 
 import src.augmentations
 import src.models
-import src.datasets
+import src.loaders
 import src.losses
 import src.callbacks
 import src.runners
 
-from functools import partial
+from time import time
 
-from skimage.measure import label
-
-from src.hydra_helpers import cfg_ut, check_exclusion
 
 # definitions
 
@@ -95,63 +54,8 @@ def load_weights(model, checkpoint_addr=None,
         getattr(src.models, load_function)(model, state_dict, **load_function_params)
 
 @cfg_ut('dataset', 'loading datasets')
-def get_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
-                train_test_split_function='sklearn_train_test_split', random_state=None, train_test_split_kwargs=None,
-                aug_name='none_aug',
-                dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
-                dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
-                collate_fn_name=None,
-                sampler_function_name=None, sampler_function_kwargs=None,
-                dataloader_kwargs=None):       
-    
-    # gather data
-    data_gatherer_kwargs = data_gatherer_kwargs or {}
-    gathered_data = getattr(src.datasets, data_gatherer_name)(**data_gatherer_kwargs)
-
-    # create train-test split, limiting the overall loading capacity
-    data_splitter_kwargs = {'random_state': random_state}
-    data_splitter_kwargs.update(train_test_split_kwargs or {})
-    train_data, test_data = getattr(src.datasets, train_test_split_function)(gathered_data, **data_splitter_kwargs)
-
-    # define augmentation, since it should be passed to the dataset
-    aug = getattr(src.augmentations, aug_name)
-
-    # construct train and test datasets itself
-    dataset_kwargs = dataset_kwargs or {}
-    train_set = getattr(src.datasets, dataset_function_name)(train_data, aug=aug, **dataset_kwargs)
-    test_set = getattr(src.datasets, dataset_function_name)(test_data, aug=aug, **dataset_kwargs)
-
-    # rebalance dataset
-    if dataset_rebalance_function_name is not None:
-        dataset_rebalance_kwargs = dataset_rebalance_kwargs or {}
-        train_set, test_set = getattr(src.datasets, dataset_rebalance_function_name)([train_set, test_set], **dataset_rebalance_kwargs)
-    
-    # select collate function
-    collate_fn = getattr(src.datasets, collate_fn_name) if collate_fn_name is not None else None
-
-    # get samplers
-    if sampler_function_name is not None:
-        train_sampler = getattr(src.datasets, sampler_function_name)(train_set, **sampler_function_kwargs)
-        train_loader_kw = {'batch_sampler': train_sampler}
-        test_sampler = getattr(src.datasets, sampler_function_name)(test_set, **sampler_function_kwargs)
-        test_loader_kw = {'batch_sampler': test_sampler}
-    else:
-        train_loader_kw = {'drop_last': True, 'shuffle': True}
-        test_loader_kw = {'drop_last': True, 'shuffle': True}
-    
-    # get s
-    train_loader_kw.update({'num_workers': 16, 'pin_memory': True})
-    test_loader_kw.update({'num_workers': 16, 'pin_memory': True})
-
-    if dataloader_kwargs is not None:
-        train_loader_kw.update(dataloader_kwargs)
-        test_loader_kw.update(dataloader_kwargs)
-
-    # get data loaders
-    train_loader = DataLoader(train_set, collate_fn=collate_fn, **train_loader_kw)
-    test_loader = DataLoader(test_set, collate_fn=collate_fn, **test_loader_kw)
-
-    return train_loader, test_loader
+def get_loaders(loaders_function='generic_loaders', **kwargs):
+    return getattr(src.loaders, loaders_function)(**kwargs)
 
 @cfg_ut('optimizer', 'preparing optimizer')
 def get_optimizer(model, optimizer_name, optimizer_hyper_parameters=None, 
@@ -186,15 +90,14 @@ def get_criterion(criterion_name, criterion_hyper_parameters=None):
 @cfg_ut('logger', 'initializing logger')
 def get_logger(project_name, log_cfg, experiment_name=None):
     if project_name is not None:
-        wanlogger = WandbLogger(metric_names=None, project=project_name, name=experiment_name, config=log_cfg)
-        return wanlogger
+        wanlogger = WandbLogger(project=project_name, name=experiment_name, config=log_cfg)
+        return {'wandb': wanlogger}
+    else:
+        return None
 
 @cfg_ut('callbacks', 'getting callbacks', force=True)
-def get_callbacks(logger, *args):
-    callbacks = []
-    if logger is not None:
-        callbacks.append(logger)
-    
+def get_callbacks(*args):
+    callbacks = [] 
     for callbac_config in args:
         kwgs = (callbac_config['kwargs'] or {})if 'kwargs' in  callbac_config.keys() else {}
         new_callback = getattr(src.callbacks, callbac_config['name'])(**kwgs)
@@ -208,20 +111,55 @@ def get_callbacks(logger, *args):
 
 @cfg_ut('runner', 'initializing runner', force=True)
 def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
+    kwgs = {'input_key':"features", 'output_key': "logits", 'target_key': "targets", 'loss_key': "loss"}
     runner_kwargs = runner_kwargs or {}
-    return getattr(src.runners, runner_name)(**runner_kwargs)
+    kwgs.update(runner_kwargs)
+    
+    return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, train_loader, test_loader, callbacks, **kwargs):
+def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, seed=None, **kwargs):
     torch.backends.cudnn.benchmark = True
+
+    train_stage_loaders, inference_stage_loaders = loaders
+
+    if (num_steps is not None) and ('num_epochs' in kwargs.keys()) and (kwargs['num_epochs'] is not None):
+        raise Exception('both `num_epochs` and `num_steps` should not be configured together!')
+    
+    if num_steps is not None:
+        kwargs['num_epochs'] = num_steps // len(train_stage_loaders['train'])
 
     runner.train(
         model=model,
         criterion=criterion,
         optimizer=optimizer,
-        loaders={"train": train_loader, "valid": test_loader},
+        loaders=train_stage_loaders,
         callbacks=callbacks,
+        loggers=logger,
+        seed=seed,
         **kwargs)
+    
+    if inference_stage_loaders is not None:
+        assert len([i for i in inference_stage_loaders.keys() if i.startswith('train')]) == 0, 'There should be no train datasets on the last evaluation step!'
+        
+        if 'valid' not in inference_stage_loaders.keys():
+            inference_stage_loaders['valid'] = train_stage_loaders['valid']
+
+        kwargs['num_epochs'] = 1
+        kwargs['verbose'] = True
+        runner.train(
+            model=model,
+            criterion=criterion,
+            loaders=inference_stage_loaders,
+            callbacks=callbacks,
+            seed=seed,
+            **kwargs)
+
+def get_seed(cfg):
+    if ('seed' in cfg.keys()) and (cfg['seed'] is not None):
+        return cfg['seed']
+    else:
+        return int(time())
 
 @hydra.main(config_path='training_configs', config_name="config")
 def overall_training(cfg : DictConfig) -> None:
@@ -231,15 +169,16 @@ def overall_training(cfg : DictConfig) -> None:
         print(OmegaConf.to_yaml(cfg['model']))
         print(OmegaConf.to_yaml(cfg['training']))
     else:
+        seed = get_seed(cfg=cfg)
         model = get_model(cfg=cfg)
         load_weights(model, cfg=cfg)
-        train_loader, test_loader = get_loaders(cfg=cfg)
+        loaders = get_loaders(cfg=cfg, seed=seed)
         optimizer = get_optimizer(model, cfg=cfg)
         criterion = get_criterion(cfg=cfg)
         logger = get_logger(cfg=cfg, log_cfg=cfg)
-        callbacks = get_callbacks(logger, cfg=cfg)
+        callbacks = get_callbacks(cfg=cfg)
         runner = get_runner(cfg=cfg)
-        do_training(runner, model, criterion, optimizer, train_loader, test_loader, callbacks, cfg=cfg)
+        do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, cfg=cfg, seed=seed)
 
 if __name__ == "__main__":
     overall_training()

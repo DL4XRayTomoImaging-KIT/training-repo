@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: null
+sweep_prefix: unet_scratch
+
+defaults:
+    - override /model: eyes_large
+    - override /dataset: eyes_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        multiple_datasets_mode: default

@@ -6,7 +6,7 @@ medpy
 torch==1.7.1
 kornia
 wandb
-catalyst==20.11
+catalyst==21.12
 hydra-core==1.0.5
 scikit-image
 albumentations==0.5.2

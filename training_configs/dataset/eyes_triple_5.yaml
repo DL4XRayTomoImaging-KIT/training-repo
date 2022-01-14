@@ -1,0 +1,13 @@
+loaders_function: triple_presliced_loaders
+paths:
+  targets_sliced: /mnt/data/medaka/eyes_to_train_5/{}.tif
+  targets_full: /mnt/data/medaka/eyes_to_train_full/{}.tif
+  volumes: /mnt/data/medaka/proper_images/{}.tif
+aug_name: medium_aug_rot
+dataset_kwargs:
+  crop_size: 512
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
+  localised_crop: True
+dataloader_kwargs:
+  batch_size: 16
