@@ -1,3 +1,2 @@
-# @package _group_
-checkpoint_addr: '/mnt/data/machine-learning/logs/xenopus/2021-05-18_18-08-14/logdir/checkpoints/best.pth'
+checkpoint_addr: '/home/ws/tb0536/logs/xenopus/2021-05-18_18-08-14/logdir/checkpoints/best.pth'
 checkpoint_key: 'model_state_dict'

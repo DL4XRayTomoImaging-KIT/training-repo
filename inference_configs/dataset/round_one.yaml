@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/HD-LSDF/Xenopus/Postprocessing/tomographic data/samples for background removal/round one/*.tif'
+destination:
+  folder: '/mnt/HD-LSDF/Xenopus/Postprocessing/tomographic data/samples for background removal/round_one_result'

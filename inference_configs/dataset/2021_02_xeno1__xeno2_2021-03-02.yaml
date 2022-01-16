@@ -1,5 +1,4 @@
-# @package _group_
 source:
-  main_addr: '/mnt/HD-LSDF/Xenopus/2021_02_xeno1/xeno2_2021-03-02/*IOD*/slices*/8bit_cropped_slice.tif'
+  files: '/mnt/HD-LSDF/Xenopus/2021_02_xeno1/xeno2_2021-03-02/*IOD*/slices*/8bit_cropped_slice.tif'
 destination:
   prefix: 'segmented'
