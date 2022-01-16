@@ -25,6 +25,7 @@ class Segmenter:
         load_weights(self.model, **checkpoint_config)
         self.model = nn.DataParallel(self.model)
         self.model.to(torch.device('cuda:0'))
+        self.model.train(False)
 
         self.batch_size = processing_parameters['batch_size']
 
@@ -44,18 +45,25 @@ class Segmenter:
         else:
             self.output_dtype = None
 
+    def process_one_batch(self, batch):
+        with torch.no_grad():
+            batch = none_aug(image=batch)['image']
+            if batch.ndim < 4:
+                batch = batch[:, None, ...] # add channels dimension
+            else:
+                batch = np.moveaxis(batch, -1, 1) # move channels dimension
+            batch = batch[:, :, :batch.shape[2]//self.image_grain*self.image_grain, :batch.shape[3]//self.image_grain*self.image_grain]
+            batch = torch.from_numpy(batch)
+            batch = batch.to(torch.device('cuda:0'))
+            pred = self.activation_function(self.model(batch))
+            pred = pred.detach().cpu().numpy()
+            return pr
 
     def process_one_volume(self, volume):
         predictions = []
-        with torch.no_grad():
             for b in range(int(np.ceil(len(volume)/ self.batch_size))):
                 batch = volume[self.batch_size*b : self.batch_size*(b+1)]
-                batch = batch[:, :batch.shape[1]//self.image_grain*self.image_grain, :batch.shape[2]//self.image_grain*self.image_grain]
-                batch = none_aug(image=batch)['image']
-                batch = torch.from_numpy(batch[:, None, ...])
-                batch = batch.to(torch.device('cuda:0'))
-                pred = self.activation_function(self.model(batch))
-                pred = pred.detach().cpu().numpy()
+            pred = self.process_one_batch(batch)
                 predictions.append(pred)
         predictions = np.concatenate(predictions)
         if predictions.ndim == 4:
