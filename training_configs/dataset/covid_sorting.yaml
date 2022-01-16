@@ -1,4 +1,3 @@
-# @package _group_
 data_gatherer_name: unsupervised_target_matcher
 data_gatherer_kwargs:
   volumes: /mnt/LSDF/users/zharov/COVID19_1110/studies/prepared/{}.tiff
