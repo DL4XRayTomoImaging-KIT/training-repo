@@ -3,7 +3,7 @@ from omegaconf.listconfig import ListConfig
 
 from catalyst.metrics._functional_metric import FunctionalBatchMetric
 from catalyst.metrics import *
-from catalyst.dl import EarlyStoppingCallback # for forwarding to train
+from catalyst.dl import EarlyStoppingCallback, CheckpointCallback # for forwarding to train
 from catalyst.callbacks.metric import FunctionalBatchMetricCallback
 
 from functools import partial
