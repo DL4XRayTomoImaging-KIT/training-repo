@@ -9,3 +9,7 @@ sweep_prefix: 'lungs_scratch_2GPU_deeplab'
 defaults:
     - override /model: lungs_deeplabv3
     - override /dataset: lungs_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        multiple_datasets_mode: first

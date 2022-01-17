@@ -10,3 +10,7 @@ defaults:
     - override /model: lungs_deeplabv3
     - override /checkpoint: simclr
     - override /dataset: lungs_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        multiple_datasets_mode: first
