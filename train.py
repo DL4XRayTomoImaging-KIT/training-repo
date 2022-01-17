@@ -110,7 +110,10 @@ def get_callbacks(*args):
 
 @cfg_ut('runner', 'initializing runner', force=True)
 def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
-    kwgs = {'input_key':"features", 'output_key': "logits", 'target_key': "targets", 'loss_key': "loss"}
+    if runner_name == 'SupervisedRunner':
+        kwgs = {'input_key':"features", 'output_key': "logits", 'target_key': "targets", 'loss_key': "loss"}
+    else:
+        kwgs = {}
     runner_kwargs = runner_kwargs or {}
     kwgs.update(runner_kwargs)
     
