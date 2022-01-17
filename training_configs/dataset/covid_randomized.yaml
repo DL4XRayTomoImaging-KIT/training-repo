@@ -1,8 +1,8 @@
-# @package _group_
 data_gatherer_kwargs:
   targets: /mnt/LSDF/users/zharov/COVID19_1110/uniformly_named_masks/{}.tiff
   volumes: /mnt/LSDF/users/zharov/COVID19_1110/studies/prepared/{}.tiff
 aug_name: medium_aug_rot
+test_aug: False
 dataset_kwargs:
   crop_size: 512
   mode_3d: False
@@ -13,4 +13,3 @@ dataset_rebalance_kwargs:
   multiple_datasets_mode: default
 dataloader_kwargs:
   batch_size: 16
-  drop_last: False

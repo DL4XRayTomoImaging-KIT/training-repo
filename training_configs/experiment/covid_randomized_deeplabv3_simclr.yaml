@@ -1,0 +1,16 @@
+# @package _global_
+logger:
+    project_name: null
+training:
+    num_epochs: null
+    num_steps: 2500
+sweep_prefix: 'covid_simclr_deeplab'
+
+defaults:
+    - override /model: covid_deeplabv3
+    - override /checkpoint: simclr
+    - override /dataset: covid_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        multiple_datasets_mode: first

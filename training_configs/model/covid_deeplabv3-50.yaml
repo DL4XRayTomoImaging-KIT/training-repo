@@ -1,0 +1,5 @@
+network_type: DeepLabV3Plus
+encoder_name: resnet50
+classes: 2
+in_channels: 1
+encoder_weights: null
