@@ -12,6 +12,7 @@ import tifffile
 import hydra
 from omegaconf import DictConfig
 from tqdm.auto import tqdm
+from scipy.stats import mode
 
 # what to configure:
 # network loading config (this will share loading function with train)
@@ -29,21 +30,11 @@ class Segmenter:
 
         self.batch_size = processing_parameters['batch_size']
 
-        if ('activation_function' in processing_parameters) and (processing_parameters['activation_function'] is not None):
-            activation_function_name = processing_parameters['activation_function']
-        else:
-            activation_function_name = 'argmax'
+        activation_function_name = processing_parameters.get('activation_function', 'argmax') or 'argmax'
         self.activation_function = partial(getattr(torch, activation_function_name), dim=1)
-
-        if ('image_grain' in processing_parameters) and (processing_parameters['image_grain'] is not None):
-            self.image_grain = processing_parameters['image_grain']
-        else:
-            self.image_grain = 32
-        
-        if ('dtype' in processing_parameters):
-            self.output_dtype = processing_parameters['dtype']
-        else:
-            self.output_dtype = None
+        self.image_grain = processing_parameters.get('image_grain', 32) or 32
+        self.mode_3d = processing_parameters.get('mode_3d', False) or False
+        self.output_dtype = processing_parameters.get('dtype')
 
     def process_one_batch(self, batch):
         with torch.no_grad():
@@ -57,22 +48,42 @@ class Segmenter:
             batch = batch.to(torch.device('cuda:0'))
             pred = self.activation_function(self.model(batch))
             pred = pred.detach().cpu().numpy()
-            return pr
+            return pred
 
-    def process_one_volume(self, volume):
+    def process_one_axis(self, volume, axis=0):
         predictions = []
-            for b in range(int(np.ceil(len(volume)/ self.batch_size))):
-                batch = volume[self.batch_size*b : self.batch_size*(b+1)]
+
+        if axis != 0:
+            volume = np.moveaxis(volume, axis, 0)
+        
+        for b in range(int(np.ceil(len(volume)/ self.batch_size))):
+            batch = volume[self.batch_size*b : self.batch_size*(b+1)]
             pred = self.process_one_batch(batch)
-                predictions.append(pred)
+            predictions.append(pred)
         predictions = np.concatenate(predictions)
         if predictions.ndim == 4:
             predictions = np.pad(predictions, ((0, 0), (0, 0), (0, volume.shape[1]-predictions.shape[2]), (0, volume.shape[2]-predictions.shape[3])))
         elif predictions.ndim == 3:
             predictions = np.pad(predictions, ((0, 0), (0, volume.shape[1]-predictions.shape[1]), (0, volume.shape[2]-predictions.shape[2])))
-
+        
+        if axis != 0:
+            predictions = np.moveaxis(predictions, 0, axis)
+        
         if self.output_dtype is not None:
             predictions = predictions.astype(self.output_dtype)
+
+        return predictions
+
+    def process_one_volume(self, volume):
+        if self.mode_3d:
+            predictions = np.zeros_like(volume, dtype=self.output_dtype)
+            for axis in [0, 1, 2]:
+                predictions += self.process_one_axis(volume, axis)
+                print('axis processed ', axis)
+            predictions = predictions//3
+            print('mean estimated')
+        else:
+            predictions = self.process_one_axis(volume)
 
         return predictions
 
