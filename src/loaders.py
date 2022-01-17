@@ -60,6 +60,12 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
         train_loader_kw.update(dataloader_kwargs)
         test_loader_kw.update(dataloader_kwargs)
 
+    # avoiding empty loaders on small datasets
+    if len(train_set) <= train_loader_kw['batch_size']:
+        train_loader_kw['drop_last'] = False
+    if len(test_set) <= test_loader_kw['batch_size']:
+        test_loader_kw['drop_last'] = False
+    
     # get data loaders
     train_loader = DataLoader(train_set, collate_fn=collate_fn, **train_loader_kw)
     test_loader = DataLoader(test_set, collate_fn=collate_fn, **test_loader_kw)
