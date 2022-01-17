@@ -75,7 +75,7 @@ class PointVICRegRunner(Runner):
 
 
 class SimCLRRunner(Runner):
-    def _handle_batch(self, batch):
+    def handle_batch(self, batch):
         imgs = batch[0]
 
         embeds = self.model(imgs)
