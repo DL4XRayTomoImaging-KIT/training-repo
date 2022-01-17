@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, Subset
 
 def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
                 train_test_split_function='sklearn_train_test_split', seed=None, train_test_split_kwargs=None,
-                aug_name='none_aug',
+                aug_name='none_aug', test_aug=True,
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
                 collate_fn_name=None,
@@ -23,6 +23,12 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
 
     # define augmentation, since it should be passed to the dataset
     aug = getattr(augmentations, aug_name)
+    if test_aug == True:
+        test_aug = aug
+    elif test_aug == False:
+        test_aug = augmentations.none_aug
+    else:
+        test_aug = getattr(augmentations, test_aug)
 
     # construct train and test datasets itself
     dataset_kwargs = dataset_kwargs or {}
