@@ -1,0 +1,11 @@
+# @package _global_
+logger:
+    project_name: covid-simclr
+
+defaults:
+    - override /model: covid_simclr-50
+    - override /dataset: covid_simclr
+    - override /criterion: simclr
+
+training:
+    num_epochs: 32

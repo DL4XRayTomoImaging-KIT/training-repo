@@ -1,0 +1,4 @@
+network_type: get_personal_resnet
+resnet_type: resnet50
+num_classes: 256
+in_channels: 1
