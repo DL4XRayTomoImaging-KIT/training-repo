@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: null
+training:
+    num_epochs: null
+    num_steps: 3500
+sweep_prefix: 'lungs_sorting_deeplab-50-norm'
+
+defaults:
+    - override /model: lungs_deeplabv3-50
+    - override /checkpoint: sorting-50-norm
+    - override /dataset: lungs_randomized
