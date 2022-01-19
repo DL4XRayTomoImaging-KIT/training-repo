@@ -1,7 +1,7 @@
 import src.datasets as datasets
 import src.augmentations as augmentations
-from torch.utils.data import DataLoader
 import os
+from torch.utils.data import DataLoader, Subset
 
 def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher', data_gatherer_kwargs=None,
                 train_test_split_function='sklearn_train_test_split', seed=None, train_test_split_kwargs=None,
@@ -9,7 +9,7 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
                 collate_fn_name=None,
-                sampler_function_name=None, sampler_function_kwargs=None,
+                sampler_function_name=None, sampler_function_kwargs=None, test_upsample_to=None,
                 dataloader_kwargs=None):       
     
     # gather data
@@ -33,6 +33,9 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
     if dataset_rebalance_function_name is not None:
         dataset_rebalance_kwargs = dataset_rebalance_kwargs or {}
         train_set, test_set = getattr(datasets, dataset_rebalance_function_name)([train_set, test_set], **dataset_rebalance_kwargs)
+    
+    if test_upsample_to is not None:
+        train_set = Subset(train_set, [i for i in range(len(train_set))]*(test_upsample_to // len(train_set)))
     
     # select collate function
     collate_fn = getattr(datasets, collate_fn_name) if collate_fn_name is not None else None
