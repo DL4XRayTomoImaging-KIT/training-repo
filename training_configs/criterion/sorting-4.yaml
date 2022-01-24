@@ -1,0 +1,5 @@
+criterion_name: SortingLoss
+criterion_hyper_parameters: 
+    margin: 0.2
+    normalize: True
+    partitions: 4
