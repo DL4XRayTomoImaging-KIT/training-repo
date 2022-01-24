@@ -3,13 +3,13 @@ data_gatherer_kwargs:
   volumes: /mnt/LSDF/users/zharov/COVID19_1110/studies/prepared_32/{}.tiff
 aug_name: medium_aug_rot
 random_state: 42
-dataset_function_name: get_sorting_TVSD_datasets
+dataset_function_name: get_unsupervised_TVSD_datasets
 dataset_kwargs:
   crop_size: 512
   mode_3d: False
   one_volume_kwargs: {'use_ram': True}
-sampler_function_name: ChunkedBatchIdSampler
-sampler_function_kwargs:
+sampler_function_name: BatchViewsSampler
+sampler_function_kwargs: 
   batch_count: 2_000
   batch_size: 16
-  distribution: unique
+  views_count: 2

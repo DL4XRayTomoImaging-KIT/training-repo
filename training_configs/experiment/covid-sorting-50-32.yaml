@@ -8,9 +8,8 @@ callbacks:
 
 defaults:
     - override /model: covid_sorting-50
-    - override /dataset: covid_sorting
-    - override /criterion: sorting
+    - override /dataset: covid_sorting_32
+    - override /criterion: sorting-1
 
 training:
-    num_steps: 70_000
-    num_epochs: null
+    num_epochs: 32
