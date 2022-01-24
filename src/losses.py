@@ -1,6 +1,7 @@
 from segmenetation_losses_pytorch import *
 import numpy as np
 from einops import rearrange
+import torch
 
 from torch import nn
 eud = lambda a,b: ((a-b)**2).sum(1)**0.5
@@ -59,7 +60,16 @@ class ConCorD25D(nn.Module):
         return (self.lambda_localisation * localisation + self.lambda_segmentation * segmentation), printables
 
 class SortingLoss(nn.MarginRankingLoss):
+    def __init__(self, *args, partitions=1, normalize=False, **kwargs):
+        self.partitions = partitions
+        super().__init__(*args, **kwargs)
+        self.bn = nn.BatchNorm1d(num_features=1, affine=False, track_running_stats=False) if normalize else None
+
     def forward(self, predictions, labels=None):
+        
+        if self.bn is not None:
+            predictions = torch.cat([self.bn(i) for i in torch.chunk(predictions, self.partitions)])
+
         if labels is not None:
             order = labels.detach().cpu().numpy().flatten()
         else:
