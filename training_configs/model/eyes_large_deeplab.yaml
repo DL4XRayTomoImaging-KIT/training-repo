@@ -1,4 +1,3 @@
-# @package _group_
 network_type: DeepLabV3Plus
 encoder_name: resnet152
 classes: 7

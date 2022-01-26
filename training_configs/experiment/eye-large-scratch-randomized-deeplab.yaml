@@ -10,3 +10,7 @@ defaults:
 dataset:
     dataset_rebalance_kwargs:
         multiple_datasets_mode: default
+
+training:
+    num_epochs: null
+    num_steps: 2500
