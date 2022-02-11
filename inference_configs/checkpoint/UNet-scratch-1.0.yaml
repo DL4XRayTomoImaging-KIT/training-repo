@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/unet_scratch_2022-01-29_07-35-52/9_+dataset.dataset_rebalance_kwargs.segmented_part=1.0,+experiment=eye-large-scratch-randomized-unet,attempts=3/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

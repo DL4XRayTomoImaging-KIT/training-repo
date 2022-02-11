@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/eyes_simclr_2022-01-14_17-58-20/0_+dataset.dataset_rebalance_kwargs.segmented_part=1.0,+experiment=eye-rand-simclr,attempts=0/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

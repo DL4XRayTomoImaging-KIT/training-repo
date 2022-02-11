@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/covid/lungs_sorting_deeplab-50_2022-01-18_14-37-56/8_+dataset.dataset_rebalance_kwargs.segmented_part=1.0,+experiment=lungs_randomized_deeplabv3-50_sorting,attempts=2/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

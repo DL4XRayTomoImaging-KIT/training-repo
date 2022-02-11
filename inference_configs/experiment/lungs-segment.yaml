@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+    - override /model: lungs-deeplab-50
+    - override /checkpoint: best_lungs
+    - override /dataset: lungs
+
+dataset:
+  destination:
+    folder: '/mnt/LSDF/users/zharov/CTLungs/predictions'
+processing:
+  batch_size: 8
+

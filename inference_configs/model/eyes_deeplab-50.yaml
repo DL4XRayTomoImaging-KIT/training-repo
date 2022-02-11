@@ -1,0 +1,5 @@
+network_type: DeepLabV3Plus
+encoder_name: resnet18
+classes: 7
+in_channels: 1
+encoder_weights: null

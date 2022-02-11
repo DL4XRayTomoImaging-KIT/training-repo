@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+    - override /model: eyes_unet
+    - override /checkpoint: UNet-sorting-1.0
+    - override /dataset: train_data
+
+dataset:
+  destination:
+    folder: '/mnt/LSDF/users/zharov/medakas_segmentation_for_comparison/UNet-sorting-1.0-tv'
+processing:
+  batch_size: 8
+
