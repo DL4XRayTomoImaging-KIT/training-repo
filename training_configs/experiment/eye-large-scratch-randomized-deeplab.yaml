@@ -13,4 +13,4 @@ dataset:
 
 training:
     num_epochs: null
-    num_steps: 2500
+    num_steps: 5000
