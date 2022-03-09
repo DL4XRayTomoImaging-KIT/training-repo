@@ -3,7 +3,7 @@ data_gatherer_kwargs:
   targets: /mnt/HD-LSDF/Xenopus/segmentation_markup/masks/{}.tif
 aug_name: medium_aug_rot
 dataset_kwargs:
-  crop_size: 256
+  crop_size: 512
   mode_3d: True
   one_volume_kwargs: {'use_ram': True}
   localised_crop: True

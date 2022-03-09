@@ -5,3 +5,11 @@ logger:
 defaults:
     - override /model: xeno
     - override /dataset: xeno_stained
+
+callbacks: 
+    - {'name': 'iou_callbacks', 'kwargs': {'classes': [0, 1]}}
+    - {'name': 'mean_iou_callback'}
+    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric_key': 'mean-iou', 'loader_key': 'valid', 'minimize': False}}
+    
+training:
+    num_epochs: 100
