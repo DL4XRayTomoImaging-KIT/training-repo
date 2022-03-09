@@ -9,8 +9,8 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
                 collate_fn_name=None,
                 sampler_function_name=None, sampler_function_kwargs=None,
-                dataloader_kwargs=None):       
-    
+                dataloader_kwargs=None):
+          
     # gather data
     data_gatherer_kwargs = data_gatherer_kwargs or {}
     gathered_data = getattr(datasets, data_gatherer_name)(**data_gatherer_kwargs)

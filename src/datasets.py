@@ -8,11 +8,11 @@ from glob import glob
 import os
 import tifffile
 
-def convert_target(addr, converter):
+def convert_target(addr, converter, mode_3d):
     if isinstance(list(converter.keys())[0], str):
         # this is because of the restrictions in the OmegaConf. Should be resolved with 2.1 version.
         converter = {int(k):v for k,v in converter.items()}
-    markup = ExpandedPaddedSegmentation(addr)
+    markup = ExpandedPaddedSegmentation(addr, mode_3d=mode_3d)
     markup.data = np.vectorize(converter.get)(markup.data)
     return markup
 
@@ -35,10 +35,9 @@ def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
     datasets = []
     for image_addr, label_addr in data_addresses:
         if label_converter is not None:
-            label = convert_target(label_addr, label_converter)
+            label = convert_target(label_addr, label_converter, mode_3d=kwargs['mode_3d'])
         else:
-            label = ExpandedPaddedSegmentation(label_addr)
-        
+            label = ExpandedPaddedSegmentation(label_addr, mode_3d=kwargs['mode_3d'])
         datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
                                              **kwargs))
     return ConcatDataset(datasets)

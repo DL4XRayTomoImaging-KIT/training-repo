@@ -2,6 +2,7 @@ import builtins
 from timeit import default_timer as timer
 from omegaconf.dictconfig import DictConfig
 from omegaconf.listconfig import ListConfig
+from omegaconf import OmegaConf
 
 def cfg_ut(group_name, logline, force=False):
     def cfg_unroll(f):
@@ -14,9 +15,9 @@ def cfg_ut(group_name, logline, force=False):
                 cfg = kwargs.pop('cfg')
                 if (group_name in cfg.keys()) and (cfg[group_name] is not None):
                     if isinstance(cfg[group_name], ListConfig):
-                        args += tuple(cfg[group_name])
+                        args += tuple(OmegaConf.to_container(cfg[group_name]))
                     elif isinstance(cfg[group_name], DictConfig):
-                        kwargs.update(cfg[group_name])
+                        kwargs.update(OmegaConf.to_container(cfg[group_name]))
                     else:
                         raise ValueError(f'Unknown type of group config: {type(cfg[group_name])}')
                     is_configured = True
