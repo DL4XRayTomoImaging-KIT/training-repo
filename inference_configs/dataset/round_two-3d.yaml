@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/HD-LSDF/Xenopus/Postprocessing/tomographic_data/samples for background removal/round_two_8bit/*.tif'
+destination:
+  folder: '/mnt/HD-LSDF/Xenopus/Postprocessing/tomographic_data/samples for background removal/round_two_3D_result'

@@ -1,0 +1,13 @@
+data_gatherer_kwargs:
+  volumes: /mnt/HD-LSDF/Xenopus/segmentation_markup/images/{}.tif
+  targets: /mnt/HD-LSDF/Xenopus/segmentation_markup/masks/{}.tif
+aug_name: medium_aug_rot
+dataset_kwargs:
+  crop_size: 256
+  mode_3d: True
+  one_volume_kwargs: {'use_ram': True}
+  localised_crop: True
+  label_converter: {'0': 0, '255': 1, '1': 1}
+dataset_rebalance_function_name: TVSD_dataset_resample
+dataloader_kwargs:
+  batch_size: 64
