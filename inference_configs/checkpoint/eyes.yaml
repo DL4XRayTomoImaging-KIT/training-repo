@@ -1,5 +1,5 @@
 # @package _group_
 # 2021-06-11_11-07-15
 # 2021-06-15_16-53-30
-checkpoint_addr: '/mnt/data/machine-learning/logs/medaka-supervised/2021-07-12_23-51-23/logdir/checkpoints/best.pth'
+checkpoint_addr: '/home/ws/er5241/logs/medaka-supervised/2021-07-12_23-51-23/logdir/checkpoints/best.pth'
 checkpoint_key: 'model_state_dict'
