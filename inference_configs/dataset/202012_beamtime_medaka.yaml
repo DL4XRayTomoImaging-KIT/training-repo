@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  main_addr: '/mnt/HD-LSDF/Medaka/202012_beamtime_medaka/*/scaled_0.5_8bit_slices.tif'
+destination:
+  prefix: 'segmented'
