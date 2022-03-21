@@ -10,7 +10,3 @@ defaults:
     - override /model: covid_deeplabv3-50
     - override /checkpoint: sorting-50
     - override /dataset: covid_randomized
-
-dataset:
-    dataset_rebalance_kwargs:
-        multiple_datasets_mode: first
