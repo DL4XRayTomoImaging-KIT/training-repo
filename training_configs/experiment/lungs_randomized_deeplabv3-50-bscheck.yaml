@@ -1,0 +1,15 @@
+# @package _global_
+logger:
+    project_name: null
+training:
+    num_epochs: null
+    num_steps: 5500
+sweep_prefix: 'lungs_deeplab-50-checkbs'
+
+defaults:
+    - override /model: lungs_deeplabv3-50
+    - override /dataset: lungs_randomized
+
+dataset:
+    dataset_rebalance_kwargs:
+        segmented_part: 0.1

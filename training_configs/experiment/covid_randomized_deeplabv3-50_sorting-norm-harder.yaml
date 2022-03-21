@@ -4,14 +4,12 @@ logger:
 training:
     num_epochs: null
     num_steps: 2500
-sweep_prefix: 'covid_simclr_pfpn'
+sweep_prefix: 'covid_sorting_deeplab-50'
 
 defaults:
-    - override /model: covid_pfpn
+    - override /model: covid_deeplabv3-50
+    - override /checkpoint: sorting-50-norm-harder
     - override /dataset: covid_randomized
-
-model:
-    backbone_checkpoint: '/home/ws/tb0536/logs/covid/2021-11-18_15-55-43/logdir/checkpoints/best.pth'
 
 dataset:
     dataset_rebalance_kwargs:

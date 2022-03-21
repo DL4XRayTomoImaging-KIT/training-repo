@@ -9,6 +9,7 @@ dataset_kwargs:
   one_volume_kwargs: {'use_ram': True}
   localised_crop: True
 dataset_rebalance_function_name: TVSD_dataset_resample
+test_upsample_to: 10_000
 dataset_rebalance_kwargs:
   multiple_datasets_mode: default
 dataloader_kwargs:
