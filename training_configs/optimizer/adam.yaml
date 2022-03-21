@@ -1,0 +1,2 @@
+optimizer_name: Adam
+optimizer_hyper_parameters: {"lr": 3e-4}

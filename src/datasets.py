@@ -264,10 +264,21 @@ def adaptive_choice(choose_from, choice_count):
         subsample = [choose_from]*(choice_count//len(choose_from)) # all the full inclusions first
         subsample.append(np.random.choice(choose_from, choice_count%len(choose_from), replace=False)) # additional records
         return np.concatenate(subsample)
+
+def multiple_dataset_resample(resampling_function):
+    def wrapper_resampler(datasets, multiple_datasets_mode='all', **kwargs):
+        if multiple_datasets_mode == 'first':
+            return [resampling_function(datasets[0], **kwargs)] + datasets[1:]
+        elif multiple_datasets_mode == 'all':
+            return [resampling_function(dset, **kwargs) for dset in datasets]
+        elif multiple_datasets_mode == 'default':
+            return [resampling_function(datasets[0], **kwargs)] + [resampling_function(dset) for dset in datasets[1:]]
     
+    return wrapper_resampler
+
+@multiple_dataset_resample
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
-
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):
