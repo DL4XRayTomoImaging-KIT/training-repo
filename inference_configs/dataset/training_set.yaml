@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/HD-LSDF/Xenopus/segmentation_markup/images/*.tif'
+destination:
+  folder: '/mnt/HD-LSDF/Xenopus/segmentation_markup/test_inference/'

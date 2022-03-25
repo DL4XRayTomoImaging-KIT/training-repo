@@ -1,0 +1,22 @@
+# @package _global_
+logger:
+    project_name: xenopus
+
+defaults:
+    - override /model: xeno
+    - override /dataset: xeno_stained
+
+callbacks: 
+    - {'name': 'iou_callbacks', 'kwargs': {'classes': [0, 1]}}
+    - {'name': 'mean_iou_callback'}
+    - {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 100, 'metric_key': 'mean-iou', 'loader_key': 'valid', 'minimize': False}}
+    
+training:
+    num_epochs: 1000
+
+dataset:
+    dataset_kwargs:
+        crop_size: 512
+    dataloader_kwargs:
+        batch_size: 64
+    test_crop_size: 1024
