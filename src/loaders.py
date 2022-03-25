@@ -8,7 +8,8 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
                 dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                 dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
                 collate_fn_name=None,
-                sampler_function_name=None, sampler_function_kwargs=None, test_crop_size=None,
+                sampler_function_name=None, sampler_function_kwargs=None, 
+                test_crop_size=None, test_batch_size=None,
                 dataloader_kwargs=None):
           
     # gather data
@@ -54,6 +55,8 @@ def generic_loaders(data_gatherer_name='supervised_segmentation_target_matcher',
 
     if dataloader_kwargs is not None:
         train_loader_kw.update(dataloader_kwargs)
+        if test_batch_size is not None:
+            dataloader_kwargs['batch_size'] = test_batch_size
         test_loader_kw.update(dataloader_kwargs)
 
     # get data loaders
