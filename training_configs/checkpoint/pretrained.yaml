@@ -1,5 +1,5 @@
 # @package _group_
-checkpoint_addr: '/home/ws/tb0536/logs/covid/2022-01-23_12-23-11/1_+experiment=covid-simclr-50-32,dataset.sampler_function_kwargs.batch_size=16/logdir/checkpoints/best.pth'
+checkpoint_addr: '/home/ws/er5241/logs/medaka-supervised/2022-03-21_12-04-41/logdir/checkpoints/best.pth'
 checkpoint_key: 'model_state_dict'
 load_function: 'load_to_smp'
 model_key: 'encoder'
