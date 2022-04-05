@@ -139,7 +139,7 @@ def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks,
         seed=seed,
         **kwargs)
     
-    if inference_stage_loaders is not None:
+    if (inference_stage_loaders is not None) and inference_stage_loaders:
         assert len([i for i in inference_stage_loaders.keys() if i.startswith('train')]) == 0, 'There should be no train datasets on the last evaluation step!'
         
         if 'valid' not in inference_stage_loaders.keys():
@@ -147,6 +147,7 @@ def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks,
 
         kwargs['num_epochs'] = 1
         kwargs['verbose'] = True
+        kwargs['logdir'] = kwargs['logdir']+'_inference'
         runner.train(
             model=model,
             criterion=criterion,
