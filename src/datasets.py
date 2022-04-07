@@ -27,6 +27,8 @@ def supervised_segmentation_target_matcher(volumes, targets):
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     if volumes_limit is not None:
+        if isinstance(volumes_limit, float):
+            volumes_limit = int(volumes_limit*len(gathered_data))
         gathered_data = gathered_data[:volumes_limit]
     train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
     return train_data, test_data
