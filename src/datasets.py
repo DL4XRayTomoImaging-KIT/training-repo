@@ -23,8 +23,30 @@ def supervised_segmentation_target_matcher(volumes, targets):
         volume_ids = [i.split('-')[1] for i in label_ids]
     else:
         volume_ids = label_ids
-    
+
     return [volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]
+
+def pseudo_target_matcher(multi_pseudo_targets):
+  volumes, targets = [], []
+
+  for pseudo_targets in multi_pseudo_targets:
+    pseudo_ids = [os.path.basename(os.path.dirname(i)) for i in glob(pseudo_targets.format('*'))]
+
+    # remove organ name form target to get volume name
+    dir_name, file_name = os.path.split(pseudo_targets)
+    file_name = '_'.join(file_name.split('_')[1:])
+    pseudo_volumes = os.path.join(dir_name, file_name)
+
+    path_formatter = lambda path_, ids: [path_.format(i) for i in ids]
+    volumes.extend(path_formatter(pseudo_volumes, pseudo_ids))
+    targets.extend(path_formatter(pseudo_targets, pseudo_ids))
+
+  return volumes, targets
+  
+def get_enlarged_dataset(volumes, targets, pseudo_targets):
+  volumes, targets = supervised_segmentation_target_matcher(volumes, targets)
+  pseudo_volumes, pseudo_targets = pseudo_target_matcher(pseudo_targets)
+  return volumes+pseudo_volumes, targets+pseudo_targets
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     volumes_limit = volumes_limit or len(gathered_data[0])
