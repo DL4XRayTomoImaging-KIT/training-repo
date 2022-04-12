@@ -1,0 +1,21 @@
+# @package _group_
+data_gatherer_name: get_enlarged_dataset
+data_gatherer_kwargs:
+  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/eyes_to_train/{}.nii
+  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/proper_images/{}.tif
+  pseudo_targets: ['/mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/eyes_scaled_0.5_8bit_slices.tif',
+                   '/mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/eyes_scaled_0.5_8bit_slices.tif',
+                   '/mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/eyes_scaled_0.5_8bit_slices.tif']
+aug_name: medium_aug_rot
+random_state: 42
+dataset_kwargs:
+  crop_size: 256
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
+  localised_crop: True
+  label_converter: {'0': 0, '1': 1, '2': 1, '3': 0, '4': 0, '5': 3, '6': 3, '7': 4, '8': 4, '9': 5, '10': 5, '11': 6, '12': 6} # legacy conversion, keeped for compatibility
+dataset_rebalance_function_name: TVSD_dataset_resample
+sampler_function_kwargs:
+  # empty_part: 0.2
+dataloader_kwargs:
+  batch_size: 64

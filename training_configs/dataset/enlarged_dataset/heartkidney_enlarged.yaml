@@ -1,0 +1,15 @@
+# @package _group_
+data_gatherer_name: get_enlarged_dataset
+data_gatherer_kwargs:
+  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/heartkidney_decropped/{}.tif
+  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+  pseudo_targets: ['/mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/heartkidney_scaled_0.5_8bit_slices.tif',
+                   '/mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/heartkidney_scaled_0.5_8bit_slices.tif',
+                   '/mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/heartkidney_scaled_0.5_8bit_slices.tif']  
+aug_name: medium_aug_rot
+random_state: 42
+dataset_kwargs:  
+  crop_size: 256
+  mode_3d: False
+  one_volume_kwargs: {'use_ram': True}
+  label_converter: {'0':0, '4':1, '5':2, '6':1, '7':3, '9':4, '10':5}
