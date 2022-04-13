@@ -7,6 +7,7 @@ from medpy.io import load as medload
 from glob import glob
 import os
 import tifffile
+from tqdm.auto import tqdm
 
 def convert_target(addr, converter):
     if isinstance(list(converter.keys())[0], str):
@@ -55,14 +56,19 @@ def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=Non
 
 def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
     datasets = []
-    for image_addr, label_addr in data_addresses:
-        if label_converter is not None:
-            label = convert_target(label_addr, label_converter)
-        else:
-            label = ExpandedPaddedSegmentation(label_addr)
-        
-        datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
-                                             **kwargs))
+    for image_addr, label_addr in tqdm(data_addresses, desc='applying dataset function'):
+        try:
+          if label_converter is not None:
+              label = convert_target(label_addr, label_converter)
+          else:
+              label = ExpandedPaddedSegmentation(label_addr)
+          
+          datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
+                                               **kwargs))
+        except Exception as e:  # arises when mask contains no organs
+          print(f'img_addr: {image_addr}')
+          print(f'mask_addr: {label_addr}')
+          print(f'error: {e}')
     return ConcatDataset(datasets)
 
 def adaptive_choice(choose_from, choice_count):
