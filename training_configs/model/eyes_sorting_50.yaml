@@ -1,5 +1,5 @@
 # @package _group_
-network_type: MyPersonalResnet
-resnet_type: resnet152
+network_type: get_personal_resnet
+resnet_type: resnet50
 num_classes: 1
 in_channels: 1
