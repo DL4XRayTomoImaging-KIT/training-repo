@@ -1,0 +1,9 @@
+# @package _global_
+logger:
+    project_name: pipeline test
+
+defaults:
+    - override /model: single_class_decathlon
+    - override /dataset/gatherers: brain_tumor_nearest
+    - override /dataset/datasets: brain_tumor
+    - override /callbacks: single_class_decathlon

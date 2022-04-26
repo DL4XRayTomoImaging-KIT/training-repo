@@ -6,8 +6,6 @@ import numpy as np
 from medpy.io import load as medload
 from glob import glob
 import os
-import tifffile
-from tqdm.auto import tqdm
 
 def convert_target(addr, converter):
     if isinstance(list(converter.keys())[0], str):
@@ -24,8 +22,8 @@ def supervised_segmentation_target_matcher(volumes, targets):
         volume_ids = [i.split('-')[1] for i in label_ids]
     else:
         volume_ids = label_ids
-
-    return [volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]
+    
+    return list(zip([volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]))
 
 def pseudo_target_matcher(multi_pseudo_targets):
   volumes, targets = [], []
@@ -50,25 +48,16 @@ def get_enlarged_dataset(volumes, targets, pseudo_targets):
   return volumes+pseudo_volumes, targets+pseudo_targets
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
-    volumes_limit = volumes_limit or len(gathered_data[0])
-    train_data, test_data = train_test_split(list(zip(*gathered_data))[:volumes_limit], random_state=random_state, train_size=train_volumes)
+    if volumes_limit is not None:
+        gathered_data = gathered_data[:volumes_limit]
+    train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
     return train_data, test_data
 
-def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
+def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
     datasets = []
-    for image_addr, label_addr in tqdm(data_addresses, desc='applying dataset function'):
-        try:
-          if label_converter is not None:
-              label = convert_target(label_addr, label_converter)
-          else:
-              label = ExpandedPaddedSegmentation(label_addr)
-          
-          datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
-                                               **kwargs))
-        except Exception as e:  # arises when mask contains no organs
-          print(f'img_addr: {image_addr}')
-          print(f'mask_addr: {label_addr}')
-          print(f'error: {e}')
+    for image_addr, label_addr in data_addresses:
+        datasets.append(VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
+                                             **kwargs))
     return ConcatDataset(datasets)
 
 def adaptive_choice(choose_from, choice_count):
@@ -78,10 +67,21 @@ def adaptive_choice(choose_from, choice_count):
         subsample = [choose_from]*(choice_count//len(choose_from)) # all the full inclusions first
         subsample.append(np.random.choice(choose_from, choice_count%len(choose_from), replace=False)) # additional records
         return np.concatenate(subsample)
+
+def multiple_dataset_resample(resampling_function):
+    def wrapper_resampler(datasets, multiple_datasets_mode='all', **kwargs):
+        if multiple_datasets_mode == 'first':
+            return [resampling_function(datasets[0], **kwargs)] + datasets[1:]
+        elif multiple_datasets_mode == 'all':
+            return [resampling_function(dset, **kwargs) for dset in datasets]
+        elif multiple_datasets_mode == 'default':
+            return [resampling_function(datasets[0], **kwargs)] + [resampling_function(dset) for dset in datasets[1:]]
     
+    return wrapper_resampler
+
+@multiple_dataset_resample
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
-
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):

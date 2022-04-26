@@ -1,0 +1,10 @@
+- matcher_kwargs:
+    volumes: /mnt/data/decathlon/Task01_BrainTumour/train/volumes/{}.tif
+    targets: /mnt/data/decathlon/Task01_BrainTumour/train/labels_biomedisa/{}.tif
+  seed: 42
+- matcher_kwargs:
+    volumes: /mnt/data/decathlon/Task01_BrainTumour/test/volumes/{}.tif
+    targets: /mnt/data/decathlon/Task01_BrainTumour/test/labels/{}.tif
+  split_function: null
+  names: test
+  seed: 42
