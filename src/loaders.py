@@ -1,3 +1,5 @@
+from hashlib import new
+from builtins import ValueError, dict, isinstance
 import src.datasets as datasets
 import src.augmentations as augmentations
 from torch.utils.data import DataLoader
@@ -72,6 +74,19 @@ def get_one_loader(data, aug_name='none_aug',
 
     return loader
 
+def recurrent_merge(a, b):
+    new_dict = deepcopy(a)
+    for k, v in b.items():
+        if k in new_dict.keys():
+            if isinstance(new_dict[k], dict) and isinstance(v, dict):
+                new_dict[k] = recurrent_merge(new_dict[k], v)
+            elif isinstance(new_dict[k], dict) or isinstance(v, dict):
+                raise ValueError('updating non-dict with dict and vice versa is prohibited!')
+            else:
+                new_dict[k] = v
+        else:
+            new_dict[k] = v
+    return new_dict
 
 def get_loaders(dicts_of_parameters, dict_of_data):
     if not isinstance(dicts_of_parameters, list):
@@ -94,7 +109,7 @@ def get_loaders(dicts_of_parameters, dict_of_data):
         default_dataset_params = parameters_by_name.pop('default')
 
         for dataset_name in parameters_by_name.keys():
-            parameters_by_name[dataset_name] = default_dataset_params | parameters_by_name[dataset_name]
+            parameters_by_name[dataset_name] = recurrent_merge(default_dataset_params, parameters_by_name[dataset_name])
 
     for dataset_name, parameters_set in parameters_by_name.items():
         if parameters_set.pop('in_loop', True):
