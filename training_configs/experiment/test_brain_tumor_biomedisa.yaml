@@ -1,7 +1,0 @@
-# @package _global_
-logger:
-    project_name: pipeline test
-
-defaults:
-    - override /model: eyes
-    - override /dataset: eyes

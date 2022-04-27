@@ -9,12 +9,16 @@ defaults:
     - callbacks:
     
 logger:
-    project_name: fish-eye
+    project_name: brain-tumor
     experiment_name: null 
 training:
     verbose: True
-    num_epochs: 5
+    num_epochs: 100
     logdir: ./logdir
+    load_best_on_end: True
+    valid_metric: 'iou-1'
+    valid_loader: 'valid'
+    minimize_valid_metric: False
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
 hydra:

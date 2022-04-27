@@ -1,0 +1,10 @@
+- matcher_kwargs:
+    volumes: /mnt/data/decathlon/${task_name}/train/volumes/{}.tif
+    targets: /mnt/data/decathlon/${task_name}/train/labels_nearest/{}.tif
+  split_kwargs:
+    volumes_limit: ${num_volumes}
+- matcher_kwargs:
+    volumes: /mnt/data/decathlon/${task_name}/test/volumes/{}.tif
+    targets: /mnt/data/decathlon/${task_name}/test/labels/{}.tif
+  split_function: null
+  names: infer

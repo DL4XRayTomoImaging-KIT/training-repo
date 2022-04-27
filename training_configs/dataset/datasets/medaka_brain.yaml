@@ -1,23 +1,25 @@
 - dataset_names: default
   dataset_kwargs:
-    crop_size: 256
+    crop_size: 512
     mode_3d: False
     one_volume_kwargs: {'use_ram': True}
     localised_crop: True
   dataloader_kwargs:
-    batch_size: 512
+    batch_size: 256
     drop_last: False
     
 - dataset_names: 'train'
   aug_name: medium_aug_rot
   dataset_rebalance_function_name: TVSD_dataset_resample
   dataset_rebalance_kwargs:
-    segmented_part: 27070
+    segmented_part: 9022
+  dataset_kwargs:
+    crop_size: 256
   dataloader_kwargs:
     batch_size: 128
     drop_last: True
 
-- dataset_names: 'valid'
+- dataset_names: 'valid' 
 
 - dataset_names: 'infer'
   in_loop: False

@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/2022-04-23_17-14-37/0_+experiment=medaka_brain,attempts=0,dataset/gatherers=sparse,logger.project_name=null,num_volumes=1.0/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

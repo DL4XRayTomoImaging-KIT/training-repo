@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: pancreas
+
+defaults:
+    - override /model: single_class_decathlon
+    # - override /dataset/gatherers: full
+    - override /dataset/datasets: pancreas
+    - override /callbacks: single_class_decathlon
+
+task_name: Task07_Pancreas
+num_volumes: 1.0

@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  files: '/mnt/data/decathlon/Task12_Medaka/train/volumes/*.tif'
+destination:
+  folder: '/mnt/data/decathlon/Task12_Medaka/train/volumes_segmented/'

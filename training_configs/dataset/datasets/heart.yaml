@@ -1,6 +1,6 @@
 - dataset_names: default
   dataset_kwargs:
-    crop_size: 256
+    crop_size: 320
     mode_3d: False
     one_volume_kwargs: {'use_ram': True}
     localised_crop: True
@@ -12,7 +12,9 @@
   aug_name: medium_aug_rot
   dataset_rebalance_function_name: TVSD_dataset_resample
   dataset_rebalance_kwargs:
-    segmented_part: 27070
+    segmented_part: 1061
+  dataset_kwargs:
+    crop_size: 256
   dataloader_kwargs:
     batch_size: 128
     drop_last: True

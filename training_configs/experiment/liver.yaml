@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: liver
+
+defaults:
+    - override /model: single_class_decathlon
+    # - override /dataset/gatherers: full
+    - override /dataset/datasets: liver
+    - override /callbacks: single_class_decathlon
+
+task_name: Task03_Liver
+num_volumes: 1.0

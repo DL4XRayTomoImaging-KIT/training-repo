@@ -1,0 +1,3 @@
+- {'name': 'iou_callbacks', 'kwargs': {'classes': [1,2,3,4,5]}}
+- {'name': 'mean_iou_callback'}
+- {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 10, 'metric_key': 'mean-iou', 'loader_key': 'valid', 'minimize': False}}

@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: medaka_brain
+
+defaults:
+    - override /model: medaka_brain
+    # - override /dataset/gatherers: full
+    - override /dataset/datasets: medaka_brain
+    - override /callbacks: medaka_brain
+
+task_name: Task12_Medaka
+num_volumes: 1.0
