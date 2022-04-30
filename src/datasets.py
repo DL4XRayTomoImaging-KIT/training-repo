@@ -3,7 +3,6 @@ from TVSD import VolumeSlicingDataset, ExpandedPaddedSegmentation
 from sklearn.model_selection import train_test_split
 import torch
 import numpy as np
-from medpy.io import load as medload
 from glob import glob
 import os
 
@@ -26,12 +25,13 @@ def supervised_segmentation_target_matcher(volumes, targets):
     return list(zip([volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]))
 
 def pseudo_target_matcher(multi_pseudo_targets):
+  # takes [dirs containing pseudo targets and volumes] as input
   volumes, targets = [], []
 
   for pseudo_targets in multi_pseudo_targets:
     pseudo_ids = [os.path.basename(os.path.dirname(i)) for i in glob(pseudo_targets.format('*'))]
 
-    # remove organ name form target to get volume name
+    # remove organ name from target to get volume name
     dir_name, file_name = os.path.split(pseudo_targets)
     file_name = '_'.join(file_name.split('_')[1:])
     pseudo_volumes = os.path.join(dir_name, file_name)
@@ -40,12 +40,12 @@ def pseudo_target_matcher(multi_pseudo_targets):
     volumes.extend(path_formatter(pseudo_volumes, pseudo_ids))
     targets.extend(path_formatter(pseudo_targets, pseudo_ids))
 
-  return volumes, targets
+  return list(zip(volumes, targets))
   
 def get_enlarged_dataset(volumes, targets, pseudo_targets):
-  volumes, targets = supervised_segmentation_target_matcher(volumes, targets)
-  pseudo_volumes, pseudo_targets = pseudo_target_matcher(pseudo_targets)
-  return volumes+pseudo_volumes, targets+pseudo_targets
+  gathered_data = supervised_segmentation_target_matcher(volumes, targets)
+  gathered_pseudo_data = pseudo_target_matcher(pseudo_targets)
+  return gathered_data + gathered_pseudo_data
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     if volumes_limit is not None:
