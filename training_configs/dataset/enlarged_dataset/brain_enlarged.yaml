@@ -6,6 +6,7 @@ gatherers:
       pseudo_targets: ['/mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif',
                        '/mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif',
                        '/mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif']
+    split_function: enlarged_data_split
     seed: 42
     
 datasets:
