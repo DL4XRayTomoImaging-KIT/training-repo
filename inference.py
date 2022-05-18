@@ -43,11 +43,15 @@ class Segmenter:
                 batch = batch[:, None, ...] # add channels dimension
             else:
                 batch = np.moveaxis(batch, -1, 1) # move channels dimension
-            batch = batch[:, :, :batch.shape[2]//self.image_grain*self.image_grain, :batch.shape[3]//self.image_grain*self.image_grain]
+            oh = batch.shape[2]
+            ow = batch.shape[3]
+            h = int(np.ceil(batch.shape[2]/self.image_grain)*self.image_grain)
+            w = int(np.ceil(batch.shape[3]/self.image_grain)*self.image_grain)
+            batch = np.pad(batch, ((0,0), (0, 0), (0, h-oh), (0, w-ow)), mode='reflect')
             batch = torch.from_numpy(batch)
             batch = batch.to(torch.device('cuda:0'))
             pred = self.activation_function(self.model(batch))
-            pred = pred.detach().cpu().numpy()
+            pred = pred.detach().cpu().numpy()[..., :oh, :ow]
             return pred
 
     def process_one_axis(self, volume, axis=0):
