@@ -33,15 +33,10 @@ def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=Non
     train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
     return train_data, test_data
 
-def get_TVSD_datasets(data_addresses, aug=None, label_converter=None, **kwargs):
+def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
     datasets = []
     for image_addr, label_addr in data_addresses:
-        if label_converter is not None:
-            label = convert_target(label_addr, label_converter)
-        else:
-            label = ExpandedPaddedSegmentation(label_addr)
-        
-        datasets.append(VolumeSlicingDataset(image_addr, segmentation=label, augmentations=aug,
+        datasets.append(VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
                                              **kwargs))
     return ConcatDataset(datasets)
 
