@@ -1,16 +1,23 @@
 from hashlib import new
 from builtins import ValueError, dict, isinstance
+from operator import getitem
 import src.datasets as datasets
 import src.augmentations as augmentations
 from torch.utils.data import DataLoader
 from copy import deepcopy
 
-def gather_one_collection(matcher_funcion='supervised_segmentation_target_matcher', matcher_kwargs=None, 
+import torch
+import torchio as tio
+from univread import read as imread 
+import numpy as np
+
+def gather_one_collection(matcher_funcion='supervised_segmentation_target_matcher', matcher_kwargs=None, matcher_args=None,
                     split_function='sklearn_train_test_split', seed=None, split_kwargs=None, names=['train', 'valid']):
 
     # gather data
     matcher_kwargs = matcher_kwargs or {}
-    gathered_data = getattr(datasets, matcher_funcion)(**matcher_kwargs)
+    matcher_args = matcher_args or []
+    gathered_data = getattr(datasets, matcher_funcion)(*matcher_args, **matcher_kwargs)
 
     # create train-test split, limiting the overall loading capacity
     if split_function is not None:
@@ -33,8 +40,7 @@ def gather_collections(dicts_of_parameters, seed):
         gathered_collections.update(gather_one_collection(**parameters_set))
     return gathered_collections
 
-
-def get_one_loader(data, aug_name='none_aug',
+def get_one_generic_loader(data, aug_name='none_aug',
                   dataset_function_name='get_TVSD_datasets', dataset_kwargs=None,
                   dataset_rebalance_function_name=None, dataset_rebalance_kwargs=None,
                   collate_fn_name=None,
@@ -74,6 +80,51 @@ def get_one_loader(data, aug_name='none_aug',
 
     return loader
 
+def collate_correction_subjects(list_of_subjects):
+    vols = torch.stack([subj['volume']['data'] for subj in list_of_subjects])
+    prds = torch.stack([subj['prediction']['data'] for subj in list_of_subjects])
+    labs = torch.stack([subj['label']['data'] for subj in list_of_subjects])
+    
+    return torch.concat([vols, prds], 1), labs.type(torch.uint8)
+
+def get_3D_correction_loader(data, 
+                             map_labels=None, transform=None,
+                             patch_size=64, 
+                             max_queue_length=16, samples_per_volume=None, num_workers=16, 
+                             batch_size=16):
+        
+        subjects = []
+
+        for v_a, p_a, l_a in data:
+            #TODO: intellectual channel adding?
+            v = imread(v_a)[None, ...].astype(np.uint8)
+            p = imread(p_a)[None, ...].astype(np.uint8)
+            l = imread(l_a)[None, ...].astype(np.uint8)
+
+            if map_labels is not None:
+                l = np.vectorize(map_labels.get)(l)
+
+            subjects.append(tio.Subject(volume=tio.ScalarImage(tensor=v),
+                                        label=tio.LabelMap(tensor=l),
+                                        prediction=tio.LabelMap(tensor=p)))
+        
+        if transform is not None:
+            transform = getattr(augmentations, transform)
+        dataset = tio.SubjectsDataset(subjects, transform=transform)
+        sampler = tio.data.UniformSampler(patch_size=patch_size)
+        patches_queue = tio.Queue(
+            dataset,
+            max_length=max_queue_length,
+            samples_per_volume=samples_per_volume or int(np.cumprod(v.shape)[-1]//(patch_size**3)),
+            sampler=sampler,
+            num_workers=num_workers)
+        
+        return DataLoader(patches_queue, 
+                          batch_size=batch_size, 
+                          num_workers=0, 
+                          collate_fn=collate_correction_subjects
+                         )
+
 def recurrent_merge(a, b):
     new_dict = deepcopy(a)
     for k, v in b.items():
@@ -89,11 +140,21 @@ def recurrent_merge(a, b):
     return new_dict
 
 def get_loaders(dicts_of_parameters, dict_of_data):
+
+    if isinstance(dicts_of_parameters, dict):
+        meta_parameters = dicts_of_parameters['meta_parameters']
+        dicts_of_parameters = dicts_of_parameters['parameters']
+    else:
+        meta_parameters = {}
+
     if not isinstance(dicts_of_parameters, list):
         dicts_of_parameters = [dicts_of_parameters]
     
     in_loop = {}
     post_loop = {}
+
+    get_loader_function_name = meta_parameters.get('get_loader', 'get_one_generic_loader') or 'get_one_generic_loader'
+    get_one_loader = globals()[get_loader_function_name]
 
     parameters_by_name = {}
     for parameters_set in dicts_of_parameters:
