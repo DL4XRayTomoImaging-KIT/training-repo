@@ -25,6 +25,20 @@ def supervised_segmentation_target_matcher(volumes, targets):
     
     return list(zip([volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]))
 
+def same_name_target_matcher(*addrs):
+    addr_dicts = []
+    file_names = []
+    for addr in addrs:
+        addr_dicts.append({os.path.basename(i): i for i in glob(addr)})
+        file_names.append(set(addr_dicts[-1].keys()))
+    
+    joint_filenames = set.intersection(*file_names)
+
+    result_tuples = []
+    for fn in joint_filenames:
+        result_tuples.append(tuple([d[fn] for d in addr_dicts]))
+    return result_tuples
+
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     if volumes_limit is not None:
         gathered_data = gathered_data[:volumes_limit]
