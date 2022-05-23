@@ -81,3 +81,31 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
     empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
 
     return Subset(dataset, np.concatenate([segmented_subsample, empty_subsample]))
+
+from univread import read as imread
+
+class AtrociousSliceSampling(Dataset):
+    def __init__(self, volume_addr, atro_mask=[True, False, True], augmentation=None):
+        self.atro_mask = np.array(atro_mask)
+        self.volume = imread(volume_addr)
+        self.pad = len(self.atro_mask)//2
+        self.augmentation = augmentation
+        
+    def __len__(self):
+        return len(self.atro_mask) - self.pad - 1
+    
+    def __getitem__(self, i):
+        i = i + self.pad
+        inp = self.volume[i-self.pad:i+self.pad+1][self.atro_mask]
+        out = self.volume[None, i]
+        
+        if self.augmentation is not None:
+            augmented = self.augmentation(image=np.moveaxis(inp, 0, -1), image_1=np.moveaxis(out, 0, -1))
+            inp, out = np.moveaxis(augmented['image'], -1, 0), np.moveaxis(augmented['image_1'], -1, 0)
+        
+        return inp, out
+
+def get_atro_denoising_datasets(data_adresses, aug=None, atro_mask=[True, False, True]):
+    datasets = [AtrociousSliceSampling(da, atro_mask=atro_mask, augmentation=aug) for da in data_adresses]
+    return ConcatDataset(datasets)
+        
