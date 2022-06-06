@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  files: '/mnt/LSDF/projects/code-vita/Medaka/2018_11/*/scaled_0.5_8bit_slices.tif'
+destination:
+  prefix: 'segmented'

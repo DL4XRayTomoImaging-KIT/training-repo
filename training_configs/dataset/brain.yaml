@@ -1,10 +1,26 @@
-# @package _group_
-data_gatherer_kwargs:
-  targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
-  volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
-aug_name: medium_aug_rot
-random_state: 42
-dataset_kwargs:  
-  crop_size: 256
-  mode_3d: False
-  one_volume_kwargs: {'use_ram': True}
+gatherers:
+  - matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
+      volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+    seed: 42
+    
+datasets:
+  - dataset_names: 'default'
+    dataset_kwargs:
+      mode_3d: False
+      use_ram: True
+      localised_crop: True
+      
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot
+    dataset_kwargs:
+      crop_size: 256
+    dataset_rebalance_function_name: TVSD_dataset_resample
+    dataloader_kwargs:
+      batch_size: 64
+
+  - dataset_names: 'valid'
+    dataset_kwargs:
+      crop_size: 512
+    dataloader_kwargs:
+      batch_size: 256
