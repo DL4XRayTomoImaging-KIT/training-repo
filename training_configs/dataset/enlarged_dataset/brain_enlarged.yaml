@@ -20,6 +20,9 @@ datasets:
     aug_name: medium_aug_rot
     dataset_kwargs:
       crop_size: 256
+      filter_function: threshold_filter
+      filter_kwargs:
+        threshold: 1e6
     dataset_rebalance_function_name: TVSD_dataset_resample
     dataloader_kwargs:
       batch_size: 64

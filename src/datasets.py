@@ -5,6 +5,8 @@ import torch
 import numpy as np
 from glob import glob
 import os
+from tqdm.auto import tqdm
+import src.filters as filters
 
 
 def convert_target(addr, converter):
@@ -59,11 +61,18 @@ def enlarged_data_split(gathered_data, **kwargs):
     train_data += gathered_data['gathered_pseudo_data']
     return train_data, test_data
 
-def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
+def get_TVSD_datasets(data_addresses, aug=None, filter_function=None, filter_kwargs=None, **kwargs):
     datasets = []
-    for image_addr, label_addr in data_addresses:
-        datasets.append(VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
-                                             **kwargs))
+    for image_addr, label_addr in tqdm(data_addresses, desc='getting TVSD datasets'):
+        if filter_function is not None:  # condition to filter out bad segmentation
+            if getattr(filters, filter_function)(label_addr, **filter_kwargs):
+                TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
+                                                 **kwargs)
+                datasets.append(TVSD_dataset)
+        else:
+          TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
+                                             **kwargs)
+          datasets.append(TVSD_dataset)
     return ConcatDataset(datasets)
 
 def adaptive_choice(choose_from, choice_count):
@@ -87,7 +96,7 @@ def multiple_dataset_resample(resampling_function):
 
 @multiple_dataset_resample
 def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
-    is_marked = np.concatenate([d.segmentation._contains_markup() for d in dataset.datasets])
+    is_marked = np.concatenate([d.segmentation._contains_markup() for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):
