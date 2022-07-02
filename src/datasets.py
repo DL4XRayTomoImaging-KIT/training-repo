@@ -44,6 +44,10 @@ def pseudo_target_matcher(multi_pseudo_targets):
         targets.extend(path_formatter(pseudo_targets, pseudo_ids))
   
     return list(zip(volumes, targets))
+    
+def self_matcher(multi_volumes):
+  volume_ids = [volume for volumes in multi_volumes for volume in glob(volumes.format('*'))]
+  return [(volume_id,volume_id) for volume_id in volume_ids]
   
 def get_enlarged_dataset(volumes, targets, pseudo_targets):
     gathered_data = supervised_segmentation_target_matcher(volumes, targets)

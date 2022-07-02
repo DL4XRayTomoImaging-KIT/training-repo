@@ -7,13 +7,14 @@ torch==1.7.1
 kornia
 wandb
 catalyst==21.12
-hydra-core==1.0.5
+hydra-core==1.1.0
 scikit-image
 albumentations==0.5.2
-git+https://github.com/MartSlaaf/TVSD
+git+https://github.com/MartSlaaf/TVSD@read-errors/dev
 tifffile
 git+https://github.com/MartSlaaf/SegLoss@packaging
 segmentation-models-pytorch
 torchvision
 einops
 git+https://github.com/MartSlaaf/FileListExpander
+git+https://github.com/DL4XRayTomoImaging-KIT/UnivRead3D.git
