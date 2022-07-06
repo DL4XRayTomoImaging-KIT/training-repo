@@ -1,8 +1,9 @@
 gatherers:
   - matcher_funcion: self_matcher
     matcher_kwargs:
-      multi_volumes: ['/mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif']
-    seed: 42
+      volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+      
+seed: 42
     
 datasets:
   - dataset_names: 'default'

@@ -30,7 +30,14 @@ def gather_collections(dicts_of_parameters, seed):
     for parameters_set in dicts_of_parameters:
         if not ('seed' in parameters_set.keys()):
             parameters_set['seed'] = seed
-        gathered_collections.update(gather_one_collection(**parameters_set))
+        collection = gather_one_collection(**parameters_set)
+                                
+        for name, data in collection.items():
+            if name in gathered_collections:
+                gathered_collections[name].extend(data)
+            else:
+                gathered_collections[name] = data
+
     return gathered_collections
 
 

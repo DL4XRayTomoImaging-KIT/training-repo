@@ -17,52 +17,28 @@ def convert_target(addr, converter):
     markup.data = np.vectorize(converter.get)(markup.data)
     return markup
 
+path_formatter = lambda path_, ids: [path_.format(i) for i in ids]
+
 def supervised_segmentation_target_matcher(volumes, targets):
     label_ids = [os.path.basename(i).split('.')[-2] for i in glob(targets.format('*'))]
-
     if '-' in label_ids[0]:
         volume_ids = [i.split('-')[1] for i in label_ids]
     else:
         volume_ids = label_ids
-    
-    return list(zip([volumes.format(i) for i in volume_ids], [targets.format(i) for i in label_ids]))
+    return list(zip(path_formatter(volumes, volume_ids), path_formatter(targets, label_ids)))
 
-def pseudo_target_matcher(multi_pseudo_targets):
-    # takes [dirs containing pseudo targets and volumes] as input
-    volumes, targets = [], []
-  
-    for pseudo_targets in multi_pseudo_targets:
-        pseudo_ids = [os.path.basename(os.path.dirname(i)) for i in glob(pseudo_targets.format('*'))]
+def pseudo_target_matcher(volumes, targets):
+    label_ids = [os.path.basename(os.path.dirname(i)) for i in glob(targets.format('*'))]
+    return list(zip(path_formatter(volumes, label_ids), path_formatter(targets, label_ids)))
     
-        # remove organ name from target to get volume name
-        dir_name, file_name = os.path.split(pseudo_targets)
-        file_name = '_'.join(file_name.split('_')[1:])
-        pseudo_volumes = os.path.join(dir_name, file_name)
-    
-        path_formatter = lambda path_, ids: [path_.format(i) for i in ids]
-        volumes.extend(path_formatter(pseudo_volumes, pseudo_ids))
-        targets.extend(path_formatter(pseudo_targets, pseudo_ids))
-  
-    return list(zip(volumes, targets))
-    
-def self_matcher(multi_volumes):
-  volume_ids = [volume for volumes in multi_volumes for volume in glob(volumes.format('*'))]
+def self_matcher(volumes):
+  volume_ids = glob(volumes.format('*'))
   return [(volume_id,volume_id) for volume_id in volume_ids]
-  
-def get_enlarged_dataset(volumes, targets, pseudo_targets):
-    gathered_data = supervised_segmentation_target_matcher(volumes, targets)
-    gathered_pseudo_data = pseudo_target_matcher(pseudo_targets)
-    return {'gathered_data': gathered_data, 'gathered_pseudo_data': gathered_pseudo_data}
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
     if volumes_limit is not None:
         gathered_data = gathered_data[:volumes_limit]
     train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
-    return train_data, test_data
-
-def enlarged_data_split(gathered_data, **kwargs):
-    train_data, test_data = train_test_split(gathered_data['gathered_data'], **kwargs)
-    train_data += gathered_data['gathered_pseudo_data']
     return train_data, test_data
 
 def get_TVSD_datasets(data_addresses, aug=None, filter_function=None, filter_kwargs=None, **kwargs):

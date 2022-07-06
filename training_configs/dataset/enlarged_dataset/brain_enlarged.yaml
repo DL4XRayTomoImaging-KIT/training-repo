@@ -1,14 +1,28 @@
 gatherers:
-  - matcher_funcion: get_enlarged_dataset
-    matcher_kwargs:
+  - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
       volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
-      pseudo_targets: ['/mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif',
-                       '/mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif',
-                       '/mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif']
-    split_function: enlarged_data_split
-    seed: 42
-    
+  - matcher_funcion: pseudo_target_matcher
+    matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/scaled_0.5_8bit_slices.tif
+    split_function: null
+    names: train
+  - matcher_funcion: pseudo_target_matcher
+    matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
+    split_function: null
+    names: train
+  - matcher_funcion: pseudo_target_matcher
+    matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
+    split_function: null
+    names: train
+
+seed: 42
+
 datasets:
   - dataset_names: 'default'
     dataset_kwargs:
@@ -20,9 +34,6 @@ datasets:
     aug_name: medium_aug_rot
     dataset_kwargs:
       crop_size: 256
-      filter_function: threshold_filter
-      filter_kwargs:
-        threshold: 1e6
     dataset_rebalance_function_name: TVSD_dataset_resample
     dataloader_kwargs:
       batch_size: 64

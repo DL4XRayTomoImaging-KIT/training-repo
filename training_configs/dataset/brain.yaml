@@ -2,7 +2,8 @@ gatherers:
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
       volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
-    seed: 42
+      
+seed: 42
     
 datasets:
   - dataset_names: 'default'
