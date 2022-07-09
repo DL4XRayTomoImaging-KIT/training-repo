@@ -41,15 +41,9 @@ def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=Non
     train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
     return train_data, test_data
 
-def get_TVSD_datasets(data_addresses, aug=None, filter_function=None, filter_kwargs=None, **kwargs):
+def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
     datasets = []
     for image_addr, label_addr in tqdm(data_addresses, desc='getting TVSD datasets'):
-        if filter_function is not None:  # condition to filter out bad segmentation
-            if getattr(filters, filter_function)(label_addr, **filter_kwargs):
-                TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
-                                                 **kwargs)
-                datasets.append(TVSD_dataset)
-        else:
           TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
                                              **kwargs)
           datasets.append(TVSD_dataset)
@@ -75,7 +69,7 @@ def multiple_dataset_resample(resampling_function):
     return wrapper_resampler
 
 @multiple_dataset_resample
-def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
+def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_function=None, filter_kwargs=None):
     is_marked = np.concatenate([d.segmentation._contains_markup() for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
     if segmented_part is None:
         segmented_part = 1.0
@@ -89,5 +83,9 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1):
 
     segmented_subsample = adaptive_choice(np.where(is_marked)[0], segmented_part)
     empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
+    collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
+    
+    filter_kwargs = filter_kwargs or {}
+    exclude_subsample = getattr(filters, filter_function)(dataset, **filter_kwargs)
 
-    return Subset(dataset, np.concatenate([segmented_subsample, empty_subsample]))
+    return Subset(dataset, np.setdiff1d(collective_subsample, exclude_subsample))
