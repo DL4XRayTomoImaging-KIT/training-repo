@@ -85,7 +85,10 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_fu
     empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
     collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
     
-    filter_kwargs = filter_kwargs or {}
-    exclude_subsample = getattr(filters, filter_function)(dataset, **filter_kwargs)
+    if filter_function is not None:
+        filter_kwargs = filter_kwargs or {}
+        exclude_subsample = getattr(filters, filter_function)(dataset, **filter_kwargs)
+    else:  
+        exclude_subsample = []
 
     return Subset(dataset, np.setdiff1d(collective_subsample, exclude_subsample))
