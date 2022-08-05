@@ -2,6 +2,7 @@ gatherers:
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
       volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+    seed: 42  
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif
       volumes: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/scaled_0.5_8bit_slices.tif
@@ -20,8 +21,6 @@ gatherers:
     matcher_funcion: pseudo_target_matcher  
     split_function: null
     names: train
-
-seed: 42
 
 datasets:
   - dataset_names: 'default'
