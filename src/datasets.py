@@ -5,6 +5,7 @@ import torch
 import numpy as np
 from glob import glob
 import os
+import json
 from tqdm.auto import tqdm
 import src.filters as filters
 
@@ -69,8 +70,13 @@ def multiple_dataset_resample(resampling_function):
     return wrapper_resampler
 
 @multiple_dataset_resample
-def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_function=None, filter_kwargs=None):
-    is_marked = np.concatenate([d.segmentation._contains_markup() for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
+def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_function=None, filter_kwargs=None, contains_markup_path=None):
+    if contains_markup_path is None:
+        is_marked = np.concatenate([d.segmentation._contains_markup() for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
+    else:
+        with open(contains_markup_path) as f:
+            contains_markup_data = json.load(f)  
+        is_marked = np.concatenate([contains_markup_data[d.segmentation.file_addr] for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):
