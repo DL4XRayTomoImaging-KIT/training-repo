@@ -11,7 +11,7 @@ from functools import partial
 import torch
 import numpy as np
 
-def iou(preds, labels, C, EMPTY=np.nan, ignore=None, per_image=False):
+def iou(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
     """
     Array of IoU for each (non ignored) class
     """
@@ -37,9 +37,9 @@ def get_iou(preds, labels, label_to_calculate=None):
     C = preds.shape[1]
     preds = torch.argmax(preds, 1)
     if label_to_calculate is not None:
-        return np.nanmean(iou(preds, labels[:, 0], [label_to_calculate,]))
+        return iou(preds, labels[:, 0], [label_to_calculate,]).mean()
     else:
-        return np.nanmean(iou(preds, labels[:, 0], C)[1:]) # ignoiring background label.
+        return iou(preds, labels[:, 0], C)[1:].mean() # ignoring background label.
 
 def iou_callbacks(classes):
     if isinstance(classes, ListConfig) or isinstance(classes, list):
