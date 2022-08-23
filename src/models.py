@@ -3,6 +3,7 @@ from segmentation_models_pytorch import * # we need everything from the smp
 # now we define our own models
 import torch
 from torch import nn
+from torchvision.models import alexnet
 from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock
 from einops import rearrange
 

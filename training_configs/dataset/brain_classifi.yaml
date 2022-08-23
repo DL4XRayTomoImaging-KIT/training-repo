@@ -1,0 +1,26 @@
+gatherers:
+  - matcher_function: classification_addr_slices
+    matcher_kwargs:
+      sliceQuality_data_path: /home/ws/er5241/Repos/training-repo/utilities/manual_labels.json
+    seed: 42
+    
+datasets:
+  - dataset_names: 'default'
+    dataset_function_name: LabelledSlicesDataset
+    dataset_kwargs:
+      mode_3d: False
+      use_ram: False
+      localised_crop: True
+      
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot
+    dataset_kwargs:
+      crop_size: 256
+    dataloader_kwargs:
+      batch_size: 64
+
+  - dataset_names: 'valid'
+    dataset_kwargs:
+      crop_size: 512
+    dataloader_kwargs:
+      batch_size: 32

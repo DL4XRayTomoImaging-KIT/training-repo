@@ -1,0 +1,4 @@
+- {'name': 'fscore_callbacks', 'kwargs': {'classes': ['0', '1']}}
+- {'name': 'mean_acc_callback'}
+- {'name': 'EarlyStoppingCallback', 'kwargs': {'patience': 25, 'metric_key': 'mean-acc', 'loader_key': 'valid', 'minimize': False}}
+- {'name': 'CheckpointCallback', 'kwargs': {'logdir': './logdir/checkpoints', 'loader_key': 'valid', 'metric_key': 'mean-acc', 'minimize': False, 'resume': False, 'load_on_stage_end': 'best', 'save_n_best': 1}}

@@ -6,13 +6,13 @@ import src.augmentations as augmentations
 from torch.utils.data import DataLoader
 from copy import deepcopy
 
-def gather_one_collection(matcher_funcion='supervised_segmentation_target_matcher', matcher_kwargs=None, 
+def gather_one_collection(matcher_function='supervised_segmentation_target_matcher', matcher_kwargs=None, 
                     split_function='sklearn_train_test_split', seed=None, split_kwargs=None, 
                     filter_function=None, filter_kwargs=None, names=['train', 'valid']):
 
     # gather data
     matcher_kwargs = matcher_kwargs or {}
-    gathered_data = getattr(datasets, matcher_funcion)(**matcher_kwargs)
+    gathered_data = getattr(datasets, matcher_function)(**matcher_kwargs)
     
     if filter_function is not None:
       filter_kwargs = filter_kwargs or {}    

@@ -98,3 +98,52 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_fu
         exclude_subsample = []
 
     return Subset(dataset, np.setdiff1d(collective_subsample, exclude_subsample))
+
+
+
+######################
+
+from univread import read as imread
+
+def classification_addr_slices(sliceQuality_data_path):
+    with open(sliceQuality_data_path, 'r') as fp:
+        sliceQuality_data = json.load(fp)
+
+    labelledSlices = []
+    lbl_dict = {'good': 0, 'bad': 1}
+    for msk_addr, slcs in sliceQuality_data.items():
+      img_addr = msk_addr.replace('brain_scaled', 'scaled')
+      for slc_id, slc_lbl in slcs.items():
+        if slc_lbl in ['good', 'bad']:  # ignore mid
+          labelledSlices.append( ((img_addr, msk_addr, int(slc_id)), lbl_dict[slc_lbl]) )
+          
+    return labelledSlices    
+
+
+class LabelledSlicesDataset(Dataset):
+    """Manually Labelled Slices dataset."""
+
+    def __init__(self, labelledSlices, aug=None, **kwargs):
+        """
+        Args:
+            labelledSlices (list): list of tuples (img_addr, msk_addr, slc_id, slc_lbl)
+        """
+          
+        self.labelledSlices = []
+        for (img_addr, msk_addr, slc_id), slc_lbl in tqdm(labelledSlices, desc='getting classification datasets'):
+          # img = imread(img_addr, lazy=True)[slc_id]
+          # msk = imread(msk_addr, lazy=True)[slc_id]
+          TVSD_dataset = VolumeSlicingDataset(img_addr, segmentation=msk_addr, augmentations=aug,
+                                             **kwargs)
+          img, msk = TVSD_dataset[slc_id]
+          idx = msk!= 0
+          img[idx] = msk[idx]
+          img = np.concatenate((img,img,img))
+          self.labelledSlices.append((img, slc_lbl))
+
+    def __len__(self):
+        return len(self.labelledSlices)
+
+    def __getitem__(self, idx):
+        slc, slc_lbl = self.labelledSlices[idx]
+        return slc, slc_lbl

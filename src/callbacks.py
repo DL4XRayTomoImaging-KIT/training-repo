@@ -56,3 +56,36 @@ def iou_callbacks(classes):
 def mean_iou_callback():
     metric = FunctionalBatchMetric(metric_key=f'mean-iou', metric_fn=get_iou)
     return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
+    
+#########################
+from sklearn.metrics import classification_report
+
+
+def get_acc(preds, labels, label_to_calculate=None):
+    labels = labels.cpu().numpy()
+    C = preds.shape[1]
+    preds = torch.argmax(preds, 1).cpu().numpy()
+    metrics = classification_report(labels,preds,output_dict=True)
+    if label_to_calculate is not None:
+      if label_to_calculate in metrics:
+        return metrics[label_to_calculate]['f1-score']
+      else:
+        return np.nan  
+    else:
+        return metrics['accuracy']
+
+def fscore_callbacks(classes):
+    if isinstance(classes, ListConfig) or isinstance(classes, list):
+        classes = classes
+    else:
+        classes = range(1, classes)
+
+    callbacks = []
+    for l in classes:
+        metric = FunctionalBatchMetric(metric_key=f'fscore-{l}', metric_fn=partial(get_acc, label_to_calculate=l))
+        callbacks.append(FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets'))
+    return callbacks
+
+def mean_acc_callback():
+    metric = FunctionalBatchMetric(metric_key=f'mean-acc', metric_fn=get_acc)
+    return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
