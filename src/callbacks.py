@@ -68,11 +68,11 @@ def get_acc(preds, labels, label_to_calculate=None):
     metrics = classification_report(labels,preds,output_dict=True)
     if label_to_calculate is not None:
       if label_to_calculate in metrics:
-        return metrics[label_to_calculate]['f1-score']
+        return 100 * metrics[label_to_calculate]['f1-score']
       else:
         return np.nan  
     else:
-        return metrics['accuracy']
+        return 100 * metrics['accuracy']
 
 def fscore_callbacks(classes):
     if isinstance(classes, ListConfig) or isinstance(classes, list):

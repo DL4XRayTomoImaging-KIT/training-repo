@@ -7,6 +7,7 @@ from torchvision.models import alexnet
 from torchvision.models.resnet import conv1x1, conv3x3, BasicBlock
 from einops import rearrange
 
+
 def get_recommended_batch_size(parameters_count, image_side):
     base_batch_size = 1
     base_batch_size *= int((512/image_side)**2) # correction for the crop size
@@ -40,3 +41,13 @@ def load_to_smp(model, state_dict, renew_parameters=None, drop_parameters=None):
         state_dict['fc.bias'] = None
 
     partial_load(model, state_dict, renew_parameters, drop_parameters)
+
+
+##########################
+
+def my_alexnet(*args, **kwargs):
+    in_channels = kwargs.pop('in_channels', None)
+    model = alexnet(*args, **kwargs)
+    if in_channels is not None:
+      model.features[0] = nn.Conv2d(in_channels, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+    return model

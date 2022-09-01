@@ -130,15 +130,20 @@ class LabelledSlicesDataset(Dataset):
         """
           
         self.labelledSlices = []
+        n_classes = 10  # give each class a separate channel
         for (img_addr, msk_addr, slc_id), slc_lbl in tqdm(labelledSlices, desc='getting classification datasets'):
           # img = imread(img_addr, lazy=True)[slc_id]
           # msk = imread(msk_addr, lazy=True)[slc_id]
           TVSD_dataset = VolumeSlicingDataset(img_addr, segmentation=msk_addr, augmentations=aug,
                                              **kwargs)
           img, msk = TVSD_dataset[slc_id]
-          idx = msk!= 0
-          img[idx] = msk[idx]
-          img = np.concatenate((img,img,img))
+          msk_channels = np.zeros((n_classes, *msk.shape[1:]))
+          img = np.concatenate((img, msk_channels), dtype=img.dtype)
+          
+          for class_ in range(n_classes):
+            idx = (msk == class_)[0]
+            img[class_ + 1][idx] = 1
+          
           self.labelledSlices.append((img, slc_lbl))
 
     def __len__(self):
