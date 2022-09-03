@@ -93,7 +93,9 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_fu
     
     if filter_function is not None:
         filter_kwargs = filter_kwargs or {}
-        exclude_subsample = getattr(filters, filter_function)(dataset, **filter_kwargs)
+        filter_func = getattr(filters, filter_function)
+        exclude_subsample = np.concatenate([filter_func(d, **filter_kwargs) for d in tqdm(dataset.datasets, desc='filtering TVSD datasets')])
+        exclude_subsample = np.where(exclude_subsample)[0]
     else:  
         exclude_subsample = []
 
@@ -102,8 +104,6 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_fu
 
 
 ######################
-
-from univread import read as imread
 
 def classification_addr_slices(sliceQuality_data_path):
     with open(sliceQuality_data_path, 'r') as fp:
@@ -132,8 +132,6 @@ class LabelledSlicesDataset(Dataset):
         self.labelledSlices = []
         n_classes = 10  # give each class a separate channel
         for (img_addr, msk_addr, slc_id), slc_lbl in tqdm(labelledSlices, desc='getting classification datasets'):
-          # img = imread(img_addr, lazy=True)[slc_id]
-          # msk = imread(msk_addr, lazy=True)[slc_id]
           TVSD_dataset = VolumeSlicingDataset(img_addr, segmentation=msk_addr, augmentations=aug,
                                              **kwargs)
           img, msk = TVSD_dataset[slc_id]
@@ -141,7 +139,7 @@ class LabelledSlicesDataset(Dataset):
           img = np.concatenate((img, msk_channels), dtype=img.dtype)
           
           for class_ in range(n_classes):
-            idx = (msk == class_)[0]
+            idx = (msk == class_)[0]                                    
             img[class_ + 1][idx] = 1
           
           self.labelledSlices.append((img, slc_lbl))

@@ -6,19 +6,19 @@ gatherers:
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif
       volumes: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/scaled_0.5_8bit_slices.tif
-    matcher_funcion: pseudo_target_matcher  
+    matcher_function: pseudo_target_matcher  
     split_function: null
     names: train
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
       volumes: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
-    matcher_funcion: pseudo_target_matcher  
+    matcher_function: pseudo_target_matcher  
     split_function: null
     names: train
   - matcher_kwargs:
       targets: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
       volumes: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
-    matcher_funcion: pseudo_target_matcher  
+    matcher_function: pseudo_target_matcher  
     split_function: null
     names: train
 
