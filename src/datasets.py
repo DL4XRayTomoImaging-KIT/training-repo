@@ -5,6 +5,7 @@ import torch
 import numpy as np
 from glob import glob
 import os
+import cv2
 import json
 from tqdm.auto import tqdm
 import src.filters as filters
@@ -44,10 +45,24 @@ def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=Non
 
 def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
     datasets = []
-    for image_addr, label_addr in tqdm(data_addresses, desc='getting TVSD datasets'):
-          TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
-                                             **kwargs)
-          datasets.append(TVSD_dataset)
+    
+    if 'filter_function' in kwargs:
+        filter_function = kwargs.pop('filter_function')
+        filter_kwargs = kwargs.pop('filter_kwargs', None)
+        filter_kwargs = filter_kwargs or {}
+        filter_function = getattr(filters, filter_function)
+            
+        for image_addr, label_addr in tqdm(data_addresses, desc='getting filtered TVSD datasets'):
+            exclude_slices = filter_function(label_addr, **filter_kwargs)
+            TVSD_dataset = my_VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
+                                               exclude_slices=exclude_slices, **kwargs)
+            datasets.append(TVSD_dataset)
+    else:
+        for image_addr, label_addr in tqdm(data_addresses, desc='getting TVSD datasets'):
+            TVSD_dataset = VolumeSlicingDataset(image_addr, segmentation=label_addr, augmentations=aug,
+                                               **kwargs)
+            datasets.append(TVSD_dataset)
+            
     return ConcatDataset(datasets)
 
 def adaptive_choice(choose_from, choice_count):
@@ -70,40 +85,48 @@ def multiple_dataset_resample(resampling_function):
     return wrapper_resampler
 
 @multiple_dataset_resample
-def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, filter_function=None, filter_kwargs=None, contains_markup_path=None):
-    if contains_markup_path is None:
-        is_marked = np.concatenate([d.segmentation._contains_markup() for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
-    else:
+def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, contains_markup_path=None):
+
+    if contains_markup_path is not None:
         with open(contains_markup_path) as f:
-            contains_markup_data = json.load(f)  
-        is_marked = np.concatenate([contains_markup_data[d.segmentation.file_addr] for d in tqdm(dataset.datasets, desc='resampling TVSD datasets')])
+            contains_markup_data = json.load(f)
+
+    is_marked = []
+    for d in tqdm(dataset.datasets, desc='resampling TVSD datasets'):
+        if contains_markup_path is None:
+            ne_slices = d.segmentation._contains_markup()
+        else:
+            ne_slices = contains_markup_data[d.segmentation.file_addr]
+            
+        ne_slices = np.array(ne_slices, dtype=int)
+        if hasattr(d, 'exclude_slices'):
+          # would be none for slices in original data
+          if d.exclude_slices is not None:
+            ne_slices[d.exclude_slices] = -1
+            
+        is_marked.append(ne_slices)         
+    is_marked = np.concatenate(is_marked)
+        
     if segmented_part is None:
         segmented_part = 1.0
     if isinstance(segmented_part, float):
-        segmented_part = int(is_marked.sum() * segmented_part)        
+        segmented_part = int((is_marked==1).sum() * segmented_part)        
     
     if isinstance(empty_part, float):
         empty_part = int(segmented_part * empty_part)
     elif empty_part is None:
-        empty_part = (1-is_marked).sum()
+        empty_part = (is_marked==0).sum()
 
-    segmented_subsample = adaptive_choice(np.where(is_marked)[0], segmented_part)
-    empty_subsample = adaptive_choice(np.where(1-is_marked)[0], empty_part)
+    segmented_subsample = adaptive_choice(np.where(is_marked==1)[0], segmented_part)
+    empty_subsample = adaptive_choice(np.where(is_marked==0)[0], empty_part)
     collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
-    
-    if filter_function is not None:
-        filter_kwargs = filter_kwargs or {}
-        filter_func = getattr(filters, filter_function)
-        exclude_subsample = np.concatenate([filter_func(d, **filter_kwargs) for d in tqdm(dataset.datasets, desc='filtering TVSD datasets')])
-        exclude_subsample = np.where(exclude_subsample)[0]
-    else:  
-        exclude_subsample = []
 
-    return Subset(dataset, np.setdiff1d(collective_subsample, exclude_subsample))
+    return Subset(dataset, collective_subsample)
 
 
 
 ######################
+
 
 def classification_addr_slices(sliceQuality_data_path):
     with open(sliceQuality_data_path, 'r') as fp:
@@ -119,6 +142,10 @@ def classification_addr_slices(sliceQuality_data_path):
           
     return labelledSlices    
 
+class my_VolumeSlicingDataset(VolumeSlicingDataset):
+    def __init__(self, *args, exclude_slices=None, **kwargs):
+        VolumeSlicingDataset.__init__(self, *args, **kwargs)
+        self.exclude_slices = exclude_slices
 
 class LabelledSlicesDataset(Dataset):
     """Manually Labelled Slices dataset."""
@@ -135,6 +162,10 @@ class LabelledSlicesDataset(Dataset):
           TVSD_dataset = VolumeSlicingDataset(img_addr, segmentation=msk_addr, augmentations=aug,
                                              **kwargs)
           img, msk = TVSD_dataset[slc_id]
+          # img = cv2.resize(img[0], dsize=(512, 512))
+          # msk = cv2.resize(msk[0], dsize=(512, 512))
+          # img, msk = np.expand_dims(img, 0), np.expand_dims(msk, 0)
+          
           msk_channels = np.zeros((n_classes, *msk.shape[1:]))
           img = np.concatenate((img, msk_channels), dtype=img.dtype)
           
