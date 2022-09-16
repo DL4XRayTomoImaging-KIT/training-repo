@@ -29,12 +29,25 @@ def slice_loss_filter(dataset, threshold=3):
 classifi_result_path="/home/ws/er5241/Repos/training-repo/utilities/classifier_result.json"
 with open(classifi_result_path, 'r') as fp:
     classifi_result = json.load(fp)
-        
-def classifier_filter(msk_addr):
+import numpy as np
+def sigmoid(x):
+  return 1 / (1 + np.exp(-x))
+
+def classifier_filter(msk_addr, threshold=0.5):
     # keep all slices of original markup
     if not msk_addr in classifi_result:
         return None
     else:
-        keep_slices = list(classifi_result[msk_addr].values()) 
+        slice_preds = np.array(list(classifi_result[msk_addr].values()))
+        slice_preds = sigmoid(slice_preds)
+        keep_slices = []
+        for slice_pred in slice_preds:
+            # slice_pred[0] -> good
+            # slice_pred[1] -> bad
+            if slice_pred[0] > threshold:
+                keep_slices.append(True)
+            else:
+                keep_slices.append(False)
+        #keep_slices = list(classifi_result[msk_addr].values()) 
         exclude_slices = [not slc for slc in keep_slices]
         return exclude_slices

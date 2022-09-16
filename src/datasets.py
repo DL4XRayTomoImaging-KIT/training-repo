@@ -106,6 +106,9 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, contains_
             
         is_marked.append(ne_slices)         
     is_marked = np.concatenate(is_marked)
+    print(f'total slices = {len(is_marked)}')
+    print(f'excluded slices = {len(is_marked[is_marked==-1])}')
+    print(f'non empty slices after exclusion = {len(is_marked[is_marked==1])}')
         
     if segmented_part is None:
         segmented_part = 1.0
