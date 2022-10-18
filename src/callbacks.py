@@ -58,6 +58,55 @@ def mean_iou_callback():
     return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
     
 #########################
+
+def dice(preds, labels, C, EMPTY=1., ignore=None, per_image=False):
+    """
+    Array of dice score for each (non ignored) class
+    """
+    if not per_image:
+        preds, labels = (preds,), (labels,)
+    dices = []
+    for pred, label in zip(preds, labels):
+        dice = []
+        ran = C if isinstance(C, list) else range(C)
+        for i in ran:
+            if i != ignore: # The ignored label is sometimes among predicted classes (ENet - CityScapes)
+                intersection = 2*((label == i) & (pred == i)).sum()
+                union = ((label == i) & (label != ignore)).sum() + ((pred == i) & (label != ignore)).sum()
+                if not union:
+                    dice.append(EMPTY)
+                else:
+                    dice.append(float(intersection) / float(union))
+        dices.append(dice)
+    dices = [np.mean(dice) for dice in zip(*dices)] # mean accross images if per_image
+    return 100 * np.array(dices)
+
+def get_dice(preds, labels, label_to_calculate=None):
+    C = preds.shape[1]
+    preds = torch.argmax(preds, 1)
+    if label_to_calculate is not None:
+        return dice(preds, labels[:, 0], [label_to_calculate,]).mean()
+    else:
+        return dice(preds, labels[:, 0], C)[1:].mean() # ignoring background label.
+
+def dice_callbacks(classes):
+    if isinstance(classes, ListConfig) or isinstance(classes, list):
+        classes = classes
+    else:
+        classes = range(1, classes)
+
+    callbacks = []
+    for l in classes:
+        metric = FunctionalBatchMetric(metric_key=f'dice-{l}', metric_fn=partial(get_dice, label_to_calculate=l))
+        callbacks.append(FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets'))
+    return callbacks
+
+def mean_dice_callback():
+    metric = FunctionalBatchMetric(metric_key=f'mean-dice', metric_fn=get_dice)
+    return FunctionalBatchMetricCallback(metric=metric, input_key='logits', target_key='targets')
+    
+#########################
+
 from sklearn.metrics import classification_report
 
 
