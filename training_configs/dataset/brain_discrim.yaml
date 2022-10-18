@@ -1,0 +1,46 @@
+gatherers:
+  - matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/segmentations/workshop/brain_decropped/{}.tif
+      volumes: /mnt/HD-LSDF/Medaka/segmentations/workshop/medaka_decropped/{}.tif
+      quality: good
+    matcher_function: supervised_segmentation_target_quality_matcher  
+    seed: 42
+  - matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/201905_beamtime_medaka_stained/{}/scaled_0.5_8bit_slices.tif
+      quality: bad
+    matcher_function: pseudo_target_quality_matcher
+    seed: 42
+  - matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/201912_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
+      quality: bad
+    matcher_function: pseudo_target_quality_matcher
+    seed: 42
+  - matcher_kwargs:
+      targets: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/brain_scaled_0.5_8bit_slices.tif
+      volumes: /mnt/HD-LSDF/Medaka/202012_beamtime_medaka/{}/scaled_0.5_8bit_slices.tif
+      quality: bad
+    matcher_function: pseudo_target_quality_matcher
+    seed: 42
+    
+datasets:
+  - dataset_names: 'default'
+    dataset_function_name: LabelledSlicesDataset
+    dataset_kwargs:
+      mode_3d: False
+      use_ram: False
+      localised_crop: True
+      
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot
+    dataset_kwargs:
+      crop_size: 256
+    dataloader_kwargs:
+      batch_size: 64
+
+  - dataset_names: 'valid'
+    dataset_kwargs:
+      crop_size: 512
+    dataloader_kwargs:
+      batch_size: 32

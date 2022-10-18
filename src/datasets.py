@@ -9,6 +9,7 @@ import cv2
 import json
 from tqdm.auto import tqdm
 import src.filters as filters
+from univread import read as imread
 
 
 def convert_target(addr, converter):
@@ -68,6 +69,8 @@ def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
 def adaptive_choice(choose_from, choice_count):
     if choice_count <= len(choose_from):
         return np.random.choice(choose_from, choice_count, replace=False)
+    elif len(choose_from) == 0:
+        return []    
     else:
         subsample = [choose_from]*(choice_count//len(choose_from)) # all the full inclusions first
         subsample.append(np.random.choice(choose_from, choice_count%len(choose_from), replace=False)) # additional records
@@ -131,6 +134,55 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, contains_
 ######################
 
 
+def get_quality_tuples(addrs, quality, segmented_part=1.0, empty_part=0.1, contains_markup_path=None):
+
+  contains_markup_path = '/home/ws/er5241/Repos/training-repo/utilities/segm_contains_markup.json'
+  if contains_markup_path is not None:
+    with open(contains_markup_path) as f:
+        contains_markup_data = json.load(f)
+
+  labelledSlices = []
+  lbl_dict = {'good': 0, 'bad': 1}
+  for img_addr, msk_addr in tqdm(addrs, desc='getting quality tuples'):
+    # returns 10 slices uniforml spread across the sample
+    # num_slcs = imread(img_addr, lazy=True).shape[0]
+    # slcs = np.linspace(0,num_slcs-1,10).astype(int)
+    
+    ne_slices = contains_markup_data[msk_addr]
+    ne_slices = np.array(ne_slices, dtype=int)
+    is_marked = ne_slices
+    
+    if segmented_part is None:
+        segmented_part = 1.0
+    if isinstance(segmented_part, float):
+        segmented_part = int((is_marked==1).sum() * segmented_part)        
+    
+    if isinstance(empty_part, float):
+        empty_part = int(segmented_part * empty_part)
+    elif empty_part is None:
+        empty_part = (is_marked==0).sum()
+
+    segmented_subsample = adaptive_choice(np.where(is_marked==1)[0], segmented_part)
+    empty_subsample = adaptive_choice(np.where(is_marked==0)[0], empty_part)
+    collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
+    slcs = collective_subsample
+    
+    for slc_id in slcs:
+      labelledSlices.append( ((img_addr, msk_addr, slc_id), lbl_dict[quality]) )
+                            
+  return labelledSlices
+  
+def supervised_segmentation_target_quality_matcher(volumes, targets, quality):
+  addrs = supervised_segmentation_target_matcher(volumes, targets)
+  labelledSlices = get_quality_tuples(addrs, quality)
+  return labelledSlices
+  
+def pseudo_target_quality_matcher(volumes, targets, quality):
+  addrs = pseudo_target_matcher(volumes, targets)
+  labelledSlices = get_quality_tuples(addrs, quality)
+  return labelledSlices
+
+
 def classification_addr_slices(sliceQuality_data_path):
     with open(sliceQuality_data_path, 'r') as fp:
         sliceQuality_data = json.load(fp)
@@ -143,12 +195,7 @@ def classification_addr_slices(sliceQuality_data_path):
         if slc_lbl in ['good', 'bad']:  # ignore mid
           labelledSlices.append( ((img_addr, msk_addr, int(slc_id)), lbl_dict[slc_lbl]) )
           
-    return labelledSlices    
-
-class my_VolumeSlicingDataset(VolumeSlicingDataset):
-    def __init__(self, *args, exclude_slices=None, **kwargs):
-        VolumeSlicingDataset.__init__(self, *args, **kwargs)
-        self.exclude_slices = exclude_slices
+    return labelledSlices
 
 class LabelledSlicesDataset(Dataset):
     """Manually Labelled Slices dataset."""

@@ -1,0 +1,10 @@
+# @package _global_
+logger:
+    project_name: brain_discriminator
+callbacks:
+    brain_classifi
+
+defaults:
+    - override /model: brain_classifi
+    - override /dataset: brain_discrim
+    - override /criterion: crossentropy_classifi
