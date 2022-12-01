@@ -1,0 +1,12 @@
+# @package _group_
+teacher:
+  network_type: Unet
+  encoder_name: resnet18
+  classes: 10
+  in_channels: 1
+  
+student:
+  network_type: Unet
+  encoder_name: resnet18
+  classes: 10
+  in_channels: 1
