@@ -39,9 +39,9 @@ def self_matcher(volumes):
   return [(volume_id,volume_id) for volume_id in volume_ids]
 
 def sklearn_train_test_split(gathered_data, random_state=None, train_volumes=None, volumes_limit=None):
-    if volumes_limit is not None:
-        gathered_data = gathered_data[:volumes_limit]
     train_data, test_data = train_test_split(gathered_data, random_state=random_state, train_size=train_volumes)
+    if volumes_limit is not None:
+        train_data = train_data[:volumes_limit]
     return train_data, test_data
 
 def get_TVSD_datasets(data_addresses, aug=None, **kwargs):
@@ -110,6 +110,8 @@ def TVSD_dataset_resample(dataset, segmented_part=1.0, empty_part=0.1, contains_
         is_marked.append(ne_slices)         
     is_marked = np.concatenate(is_marked)
     print(f'total slices = {len(is_marked)}')
+    print(f'empty slices = {len(is_marked[is_marked==0])}')
+    print(f'non empty slices = {len(is_marked[is_marked!=0])}')
     print(f'excluded slices = {len(is_marked[is_marked==-1])}')
     print(f'non empty slices after exclusion = {len(is_marked[is_marked==1])}')
         
@@ -148,27 +150,34 @@ def get_quality_tuples(addrs, quality, segmented_part=1.0, empty_part=0.1, conta
     # num_slcs = imread(img_addr, lazy=True).shape[0]
     # slcs = np.linspace(0,num_slcs-1,10).astype(int)
     
-    ne_slices = contains_markup_data[msk_addr]
-    ne_slices = np.array(ne_slices, dtype=int)
-    is_marked = ne_slices
-    
-    if segmented_part is None:
-        segmented_part = 1.0
-    if isinstance(segmented_part, float):
-        segmented_part = int((is_marked==1).sum() * segmented_part)        
-    
-    if isinstance(empty_part, float):
-        empty_part = int(segmented_part * empty_part)
-    elif empty_part is None:
-        empty_part = (is_marked==0).sum()
-
-    segmented_subsample = adaptive_choice(np.where(is_marked==1)[0], segmented_part)
-    empty_subsample = adaptive_choice(np.where(is_marked==0)[0], empty_part)
-    collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
-    slcs = collective_subsample
-    
-    for slc_id in slcs:
-      labelledSlices.append( ((img_addr, msk_addr, slc_id), lbl_dict[quality]) )
+    try:
+      if msk_addr in contains_markup_data:
+        ne_slices = contains_markup_data[msk_addr]
+      else:
+        TVSD_dataset = VolumeSlicingDataset(img_addr, segmentation=msk_addr)
+        ne_slices = TVSD_dataset.segmentation._contains_markup()  
+      ne_slices = np.array(ne_slices, dtype=int)
+      is_marked = ne_slices
+      
+      if segmented_part is None:
+          segmented_part = 1.0
+      if isinstance(segmented_part, float):
+          segmented_part = int((is_marked==1).sum() * segmented_part)        
+      
+      if isinstance(empty_part, float):
+          empty_part = int(segmented_part * empty_part)
+      elif empty_part is None:
+          empty_part = (is_marked==0).sum()
+  
+      segmented_subsample = adaptive_choice(np.where(is_marked==1)[0], segmented_part)
+      empty_subsample = adaptive_choice(np.where(is_marked==0)[0], empty_part)
+      collective_subsample = np.concatenate([segmented_subsample, empty_subsample])
+      slcs = collective_subsample
+      
+      for slc_id in slcs:
+        labelledSlices.append( ((img_addr, msk_addr, slc_id), lbl_dict[quality]) )
+    except Exception:
+      print(f'skipped {img_addr}')    
                             
   return labelledSlices
   
@@ -195,7 +204,12 @@ def classification_addr_slices(sliceQuality_data_path):
         if slc_lbl in ['good', 'bad']:  # ignore mid
           labelledSlices.append( ((img_addr, msk_addr, int(slc_id)), lbl_dict[slc_lbl]) )
           
-    return labelledSlices
+    return labelledSlices    
+
+class my_VolumeSlicingDataset(VolumeSlicingDataset):
+    def __init__(self, *args, exclude_slices=None, **kwargs):
+        VolumeSlicingDataset.__init__(self, *args, **kwargs)
+        self.exclude_slices = exclude_slices
 
 class LabelledSlicesDataset(Dataset):
     """Manually Labelled Slices dataset."""
