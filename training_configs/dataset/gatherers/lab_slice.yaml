@@ -1,0 +1,3 @@
+- matcher_args:
+    - /mnt/HD-LSDF/sd18a004/for_yaroslav/spec_ct_processed/processed_03/spectral_slices/*.tif
+  matcher_funcion: same_name_target_matcher

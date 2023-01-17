@@ -1,0 +1,4 @@
+network_type: Unet
+encoder_name: resnet50
+classes: 1
+in_channels: 2

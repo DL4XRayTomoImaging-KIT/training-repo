@@ -1,0 +1,10 @@
+dataset_config:
+  name: Noise2SelfDataset
+  kwargs:
+    noised_part: 0.0001
+    noise_position: random
+    scale_on_load: 1_000
+source:
+  files: '/mnt/LSDF/users/zharov/xeno_rere/*.tif'
+destination:
+  folder: '/mnt/LSDF/users/zharov/xeno_rere_proc/'

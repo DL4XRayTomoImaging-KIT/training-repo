@@ -1,0 +1,3 @@
+- matcher_args:
+    - /mnt/HD-LSDF/sd18a004/for_yaroslav/reconstructions_681/*.tif
+  matcher_funcion: same_name_target_matcher

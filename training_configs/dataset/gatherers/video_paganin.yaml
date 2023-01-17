@@ -1,0 +1,18 @@
+- matcher_args:
+    - /mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/001/pr-pag-all/scan_*.tif
+  matcher_funcion: same_name_target_matcher
+- matcher_args:
+    - /mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/036/scan_*/pr-pag/*pr-pag-2p0.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-3]
+- matcher_args:
+    - /mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/041/scan_*/pr-pag/*pr-pag-2p0.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-3]
+- matcher_args:
+    - /mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/042/scan_*/pr-pag/*pr-pag-2p0.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-3]

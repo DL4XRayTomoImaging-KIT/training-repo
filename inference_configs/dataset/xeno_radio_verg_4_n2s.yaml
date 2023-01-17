@@ -1,0 +1,9 @@
+dataset_config:
+  name: Noise2SelfDataset
+  kwargs:
+    noised_part: 0.0001
+    noise_position: random
+source:
+  files: '/mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_6p25_ms_exp_750_proj/radios_corrected/0.tif'
+destination:
+  prefix: 'postprocessed'

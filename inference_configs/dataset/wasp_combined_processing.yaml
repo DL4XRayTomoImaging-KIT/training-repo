@@ -1,0 +1,11 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs: {atro_mask: [False, True, False]}
+    # augmentation: infer_aug_float_atro
+  agg_func: smart_selector_agg
+  agg_func_kwargs: {samples_count: 10, noise_multiplier: 0.2, agg_func: 'mean', std_multiplier: 5}
+source:
+  files: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/collect-all-27-02/001/ffcorr-dead-px/scan_0101.tif'
+destination:
+  folder: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/collect-all-27-02/001/ffcorr-dead-px_denoised3'
+  # prefix: 'denoised_dc'

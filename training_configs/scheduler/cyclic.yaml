@@ -1,0 +1,2 @@
+scheduler_name: CyclicLR
+scheduler_kwargs: {base_lr: 1e-4, max_lr: 4e-3, cycle_momentum: False, step_size_up: 5}

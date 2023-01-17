@@ -1,0 +1,8 @@
+dataset_config:
+  name: VolumeSlicingDataset
+  kwargs: {}
+source:
+  files: '/mnt/HD-LSDF/Xenopus/2021_11_Xenopus/test_janes/*/4/radios_corrected/scaled_0.tif'
+destination:
+  prefix: 'denoized'
+

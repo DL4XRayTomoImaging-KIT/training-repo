@@ -1,0 +1,21 @@
+model:
+  network_type: Unet
+  encoder_name: resnet50
+  classes: 1
+  in_channels: 1
+checkpoint:
+  checkpoint_addr: /home/ws/tb0536/logs/medaka-supervised/2022-06-02_10-37-44/logdir/checkpoints/best.pth
+  checkpoint_key: model_state_dict
+processing:
+  batch_size: 32
+  dtype: float32
+  activation_function: mean
+dataset:
+  dataset_config:
+    name: VolumeSlicingDataset
+    kwargs: {}
+  source:
+    files: /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/test_janes/*/8/radios_corrected/scaled_0.tif
+  destination:
+    prefix: denoized
+    force: true

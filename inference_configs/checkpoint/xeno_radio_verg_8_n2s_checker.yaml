@@ -1,0 +1,3 @@
+# checkpoint_addr: '/home/ws/tb0536/logs/noise2noise_xeno/2022-07-09_08-34-49/logdir/checkpoints/last.pth'
+checkpoint_addr: '/home/ws/tb0536/logs/noise2noise_xeno/2022-07-10_23-04-55/logdir/checkpoints/last.pth'
+checkpoint_key: 'model_state_dict'

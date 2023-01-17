@@ -1,0 +1,13 @@
+# @package _global_
+logger:
+    project_name: noise2noise_wasp
+
+defaults:
+    - override /model: noise2noise
+    - override /dataset/gatherers: video_paganin
+    - override /dataset/datasets: n2n_atro_paganin
+    - override /criterion: l1
+    - override /callbacks: noise2noise
+    # - override /scheduler: cyclic
+training:
+    num_epochs: 500

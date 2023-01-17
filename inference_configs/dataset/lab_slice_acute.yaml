@@ -1,0 +1,9 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs: {atro_mask: [True, True, False]}
+    # augmentation: infer_aug_float_atro
+source:
+  files: '/mnt/HD-LSDF/sd18a004/for_yaroslav/spec_ct_processed/processed_03/spectral_slices/'
+
+destination:
+  folder: '/mnt/HD-LSDF/sd18a004/for_yaroslav/spec_ct_processed/processed_03/spectral_slices_processed/'

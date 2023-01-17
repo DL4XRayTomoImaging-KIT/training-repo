@@ -1,0 +1,9 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs: {atro_mask: [True, True, False]}
+    # augmentation: infer_aug_float_atro
+source:
+  files: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/001/scan_*/ffcorr_corr_dead_px/scan_*.tif'
+destination:
+  # folder: '/mnt/data/denoising/wasp/36'
+  prefix: 'denoised_dc'

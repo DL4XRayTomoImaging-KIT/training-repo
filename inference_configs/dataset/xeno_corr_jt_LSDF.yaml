@@ -1,0 +1,5 @@
+source:
+  files: '/mnt/HD-LSDF/Xenopus/2021_11_Xenopus/test_janes/*/*/radios_corrected/scaled_0.tif'
+destination:
+  prefix: 'denoized'
+

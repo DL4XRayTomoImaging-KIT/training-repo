@@ -6,6 +6,7 @@ defaults:
     - dataset/datasets:
     - criterion: crossentropy
     - optimizer: adam
+    - scheduler:
     - callbacks:
     
 logger:
@@ -17,13 +18,14 @@ training:
     logdir: ./logdir
 exclude_combinations: []
 attempts: null # fake variable for multirun to repeat action several times
+logs_project_name: ${logger.project_name}
 hydra:
     run:
         # Output directory for normal runs
-        dir: /home/ws/tb0536/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+        dir: /home/ws/tb0536/logs/${logs_project_name}/${now:%Y-%m-%d_%H-%M-%S}
     sweep:
        # Output directory for sweep runs
-       dir: /home/ws/tb0536/logs/medaka-supervised/${now:%Y-%m-%d_%H-%M-%S}
+       dir: /home/ws/tb0536/logs/${logs_project_name}/${now:%Y-%m-%d_%H-%M-%S}
        # Output sub directory for sweep runs.
        subdir: ${hydra.job.num}_${hydra.job.override_dirname}
 

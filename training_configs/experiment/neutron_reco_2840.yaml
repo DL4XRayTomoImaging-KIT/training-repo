@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: noise2noise
+
+defaults:
+    - override /model: noise2noise_atro
+    - override /dataset/gatherers: neutron_reco_2840
+    - override /dataset/datasets: n2n_atro_lazy
+    - override /criterion: l1
+    # - override /scheduler: cyclic
+training:
+    num_epochs: 25

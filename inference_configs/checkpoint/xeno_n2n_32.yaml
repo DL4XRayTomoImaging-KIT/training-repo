@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/medaka-supervised/2022-05-10_12-26-33/logdir/checkpoints/train.138.pth'
+checkpoint_key: 'model_state_dict'

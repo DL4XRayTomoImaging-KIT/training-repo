@@ -81,6 +81,14 @@ def get_optimizer(model, optimizer_name, optimizer_hyper_parameters=None,
 
     return optimizer
 
+@cfg_ut('scheduler', 'preparing scheduler')
+def get_scheduler(optimizer, scheduler_name, scheduler_kwargs=None):
+    scheduler_kwargs = scheduler_kwargs or {}
+
+    scheduler = getattr(torch.optim.lr_scheduler, scheduler_name)(optimizer, **scheduler_kwargs)
+
+    return scheduler
+
 @cfg_ut('criterion', 'getting criterion')
 def get_criterion(criterion_name, criterion_hyper_parameters=None):
     criterion_hyper_parameters = criterion_hyper_parameters or {}
@@ -118,7 +126,7 @@ def get_runner(runner_name='SupervisedRunner', runner_kwargs=None):
     return getattr(src.runners, runner_name)(**kwgs)
 
 @cfg_ut('training', 'starting overall training', force=True)
-def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, num_steps=None, seed=None, **kwargs):
+def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, scheduler=None, num_steps=None, seed=None, **kwargs):
     torch.backends.cudnn.benchmark = True
 
     train_stage_loaders, inference_stage_loaders = loaders
@@ -137,6 +145,7 @@ def do_training(runner, model, criterion, optimizer, loaders, logger, callbacks,
         callbacks=callbacks,
         loggers=logger,
         seed=seed,
+        scheduler=scheduler,
         **kwargs)
     
     if (inference_stage_loaders is not None) and inference_stage_loaders:
@@ -175,11 +184,12 @@ def overall_training(cfg : DictConfig) -> None:
         load_weights(model, cfg=cfg)
         loaders = get_loaders(cfg=cfg, seed=seed)
         optimizer = get_optimizer(model, cfg=cfg)
+        scheduler = get_scheduler(optimizer, cfg=cfg)
         criterion = get_criterion(cfg=cfg)
         logger = get_logger(cfg=cfg, log_cfg=cfg)
         callbacks = get_callbacks(cfg=cfg)
         runner = get_runner(cfg=cfg)
-        do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, cfg=cfg, seed=seed)
+        do_training(runner, model, criterion, optimizer, loaders, logger, callbacks, scheduler=scheduler, cfg=cfg, seed=seed)
 
 if __name__ == "__main__":
     overall_training()

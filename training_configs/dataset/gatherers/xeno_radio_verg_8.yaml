@@ -1,0 +1,5 @@
+- matcher_args:
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_3p125_ms_exp_750_proj/radios_corrected/*.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-3, -1]

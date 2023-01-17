@@ -1,0 +1,23 @@
+gatherers:
+  - matcher_args:
+      - /mnt/data/denoising/xeno/corr/all_volumes/*.tif
+    matcher_funcion: same_name_target_matcher
+
+datasets:
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot_float_atro
+    dataset_function_name: get_n2s_denoising_datasets
+    dataset_kwargs:
+      noised_part: 0.5
+      value_replacer: interpolation_both
+    dataloader_kwargs:
+      batch_size: 64
+  
+  - dataset_names: 'valid'
+    dataset_function_name: get_n2s_denoising_datasets
+    dataset_kwargs:
+      noised_part: 0.5
+      value_replacer: interpolation_both
+    aug_name: infer_aug_float_atro
+    dataloader_kwargs:
+      batch_size: 256

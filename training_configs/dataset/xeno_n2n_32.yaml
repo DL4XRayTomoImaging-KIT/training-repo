@@ -1,0 +1,29 @@
+gatherers:
+  - matcher_kwargs:
+      targets: /mnt/data/denoising/xeno/32bit/train/labels/{}.tif
+      volumes: /mnt/data/denoising/xeno/32bit/train/volumes/{}.tif
+    split_function: null
+    names: train
+  - matcher_kwargs:
+      targets: /mnt/data/denoising/xeno/32bit/valid/labels/{}.tif
+      volumes: /mnt/data/denoising/xeno/32bit/valid/volumes/{}.tif
+    split_function: null
+    names: valid
+
+datasets:
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot_float
+    dataset_kwargs:
+      crop_size: 256
+      mode_3d: False
+      use_ram: True
+    dataloader_kwargs:
+      batch_size: 64
+  
+  - dataset_names: 'valid'
+    dataset_kwargs:
+      crop_size: 512
+      mode_3d: False
+      use_ram: True
+    dataloader_kwargs:
+      batch_size: 256

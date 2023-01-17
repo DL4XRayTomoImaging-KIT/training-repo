@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: noise2noise_xeno
+
+defaults:
+    - override /model: noise2noise
+    - override /dataset/gatherers: xeno_reco_verg_8
+    - override /dataset/datasets: n2s_05_both_reco
+    - override /criterion: l1
+    - override /callbacks: noise2noise
+training:
+    num_epochs: 500

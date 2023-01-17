@@ -1,0 +1,3 @@
+- matcher_args:
+    - /mnt/LSDF/users/zharov/xeno_rere/*.tif
+  matcher_funcion: same_name_target_matcher

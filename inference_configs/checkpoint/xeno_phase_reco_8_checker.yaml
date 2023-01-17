@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/noise2noise_xeno_phase/2022-09-14_13-16-04/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'

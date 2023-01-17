@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/data/denoising/xeno/corr/all_volumes/'
+destination:
+  folder: '/mnt/data/denoising/xeno/corr/all_volumes_processed/'

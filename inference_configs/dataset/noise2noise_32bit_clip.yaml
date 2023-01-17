@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/data/denoising/32bit_clip/all_projections/'
+destination:
+  folder: '/mnt/data/denoising/32bit_clip/all_projections_processed/'

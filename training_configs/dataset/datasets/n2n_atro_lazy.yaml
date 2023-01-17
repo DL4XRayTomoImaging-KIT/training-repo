@@ -1,0 +1,15 @@
+- dataset_names: 'train'
+  aug_name: medium_aug_rot_float_atro
+  dataset_function_name: get_atro_denoising_datasets
+  dataset_kwargs:
+    lazy: True
+  dataloader_kwargs:
+    batch_size: 64
+
+- dataset_names: 'valid'
+  dataset_function_name: get_atro_denoising_datasets
+  aug_name: infer_aug_float_atro
+  dataset_kwargs:
+    lazy: True
+  dataloader_kwargs:
+    batch_size: 256

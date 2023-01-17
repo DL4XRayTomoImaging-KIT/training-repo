@@ -1,0 +1,6 @@
+- +model=xeno_n2n
+- +dataset=xeno_corr_jt_LSDF_8
+- +checkpoint=xeno_radio_n2s_05
+- +processing.activation_function=mean
+- +dataset.destination.force=True
+- processing.dtype=float32

@@ -1,0 +1,8 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs:
+    augmentation: infer_aug_float_atro
+source:
+  files: '/mnt/data/denoising/32_recon/all_projections/'
+destination:
+  folder: '/mnt/data/denoising/32_recon/all_projections_processed/'

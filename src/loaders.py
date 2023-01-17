@@ -5,6 +5,7 @@ import src.datasets as datasets
 import src.augmentations as augmentations
 from torch.utils.data import DataLoader
 from copy import deepcopy
+from collections import defaultdict
 
 import torch
 import torchio as tio
@@ -30,14 +31,14 @@ def gather_one_collection(matcher_funcion='supervised_segmentation_target_matche
         return {names: gathered_data}
 
 def gather_collections(dicts_of_parameters, seed):
-    gathered_collections = {}
+    gathered_collections = defaultdict(list)
     if not isinstance(dicts_of_parameters, list):
         dicts_of_parameters = [dicts_of_parameters]
-
     for parameters_set in dicts_of_parameters:
         if not ('seed' in parameters_set.keys()):
             parameters_set['seed'] = seed
-        gathered_collections.update(gather_one_collection(**parameters_set))
+        for name, collection in gather_one_collection(**parameters_set).items():
+            gathered_collections[name] += collection
     return gathered_collections
 
 def get_one_generic_loader(data, aug_name='none_aug',

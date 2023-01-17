@@ -1,0 +1,30 @@
+gatherers:
+  - matcher_args:
+      targets: /mnt/data/denoising/32bit_clip/train/labels/{}.tif
+      volumes: /mnt/data/denoising/32bit_clip/train/volumes/{}.tif
+    split_function: null
+    matcher_funcion: same_name_target_matcher
+    names: train
+  - matcher_kwargs:
+      targets: /mnt/data/denoising/32bit_clip/valid/labels/{}.tif
+      volumes: /mnt/data/denoising/32bit_clip/valid/volumes/{}.tif
+    split_function: null
+    names: valid
+
+datasets:
+  - dataset_names: 'train'
+    aug_name: aug_rot_float
+    dataset_kwargs:
+      crop_size: 256
+      mode_3d: False
+      use_ram: True
+    dataloader_kwargs:
+      batch_size: 64
+  
+  - dataset_names: 'valid'
+    dataset_kwargs:
+      crop_size: 512
+      mode_3d: False
+      use_ram: True
+    dataloader_kwargs:
+      batch_size: 256

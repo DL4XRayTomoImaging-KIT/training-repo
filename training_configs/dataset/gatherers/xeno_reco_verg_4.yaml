@@ -1,0 +1,5 @@
+- matcher_args:
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_6p25_ms_exp_750_proj/slices.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-2]

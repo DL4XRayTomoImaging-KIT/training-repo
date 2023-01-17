@@ -1,0 +1,11 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs: {atro_mask: [False, True, False]}
+    # augmentation: infer_aug_float_atro
+  agg_func: smart_selector_agg
+  agg_func_kwargs: {samples_count: 10, noise_multiplier: 0.2, agg_func: 'mean', std_multiplier: 5}
+source:
+  files: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2021_07_P23/06-07/Ge_BM/tricho_radio/collect-all-06-07/021H/ffcorr/scan_0011.tif'
+destination:
+  folder: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2021_07_P23/06-07/Ge_BM/tricho_radio/collect-all-06-07/021H/ffcorr-denoised'
+  # prefix: 'denoised_dc'

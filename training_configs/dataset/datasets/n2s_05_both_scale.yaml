@@ -1,0 +1,21 @@
+- dataset_names: 'train'
+  aug_name: medium_aug_rot_float_atro_reco
+  dataset_function_name: get_n2s_denoising_datasets
+  dataset_kwargs:
+    noised_part: 0.5
+    value_replacer: interpolation_input
+    masked_output: True
+    scale_on_load: 1_000
+  dataloader_kwargs:
+    batch_size: 64
+  
+- dataset_names: 'valid'
+  dataset_function_name: get_n2s_denoising_datasets
+  dataset_kwargs:
+    noised_part: 0.5
+    value_replacer: interpolation_input
+    masked_output: True
+    scale_on_load: 1_000
+  aug_name: infer_aug_float_atro
+  dataloader_kwargs:
+    batch_size: 256

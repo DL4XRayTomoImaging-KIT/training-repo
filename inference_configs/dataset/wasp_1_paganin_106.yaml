@@ -1,0 +1,8 @@
+dataset_config:
+  name: NoisyPaganinDataset
+  kwargs: {noisy_paganin_address: '/mnt/data/denoising/paganin_noise_collection.tif'}
+source:
+  files: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/001/pr-pag-all/scan_0106-pr-pag-2p0.tif'
+destination:
+  folder: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2022_02_P23/27-02/trichogramma/001/pr-pag-all-denoised'
+  # prefix: 'denoised'

@@ -1,0 +1,8 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs:
+    augmentation: infer_aug_float_atro
+source:
+  files: '/mnt/HD-LSDF/sd18a004/for_yaroslav/projections_681/'
+destination:
+  folder: '/mnt/HD-LSDF/sd18a004/for_yaroslav/projections_681_processed/'

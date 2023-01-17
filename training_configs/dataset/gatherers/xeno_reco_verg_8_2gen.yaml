@@ -1,0 +1,8 @@
+- matcher_args:
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_3p125_ms_exp_750_proj/slices.tif
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_3p125_ms_exp_750_proj/rec-proc_slices.tif
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_3p125_ms_exp_750_proj/v2_rec-proc_slices.tif
+    - /mnt/HD-LSDF/Xenopus/2021_11_Xenopus/Vergleichsmessungen_NN/Xenopus_*_3p125_ms_exp_750_proj/proc-rec-slices.tif
+  matcher_funcion: same_name_target_matcher
+  matcher_kwargs:
+    names_differentiate: [-2]

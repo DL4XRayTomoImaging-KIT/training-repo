@@ -1,0 +1,24 @@
+gatherers:
+  - matcher_args:
+      - /mnt/data/denoising/32_recon/train/volumes/*.tif
+    split_function: null
+    matcher_funcion: same_name_target_matcher
+    names: train
+  - matcher_args:
+      - /mnt/data/denoising/32_recon/valid/volumes/*.tif
+    split_function: null
+    matcher_funcion: same_name_target_matcher
+    names: valid
+
+datasets:
+  - dataset_names: 'train'
+    aug_name: medium_aug_rot_float_atro
+    dataset_function_name: get_atro_denoising_datasets
+    dataloader_kwargs:
+      batch_size: 64
+  
+  - dataset_names: 'valid'
+    dataset_function_name: get_atro_denoising_datasets
+    aug_name: infer_aug_float_atro
+    dataloader_kwargs:
+      batch_size: 256

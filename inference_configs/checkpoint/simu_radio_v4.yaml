@@ -1,0 +1,2 @@
+checkpoint_addr: '/home/ws/tb0536/logs/noise2noise_simulated/2022-07-19_15-45-55/logdir/checkpoints/last.pth'
+checkpoint_key: 'model_state_dict'

@@ -1,0 +1,1 @@
+- {'name': 'CheckpointCallback', 'kwargs': {'logdir': './logdir/checkpoints', 'loader_key': 'valid', 'metric_key': 'loss', 'minimize': True, 'resume': False, 'load_on_stage_end': 'best', 'save_n_best': 1}}

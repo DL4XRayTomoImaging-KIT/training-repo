@@ -1,0 +1,13 @@
+# @package _global_
+logger:
+    project_name: noise2noise_simulated
+
+defaults:
+    - override /model: noise2noise_atro
+    - override /dataset/gatherers: video
+    - override /dataset/datasets: n2n_atro
+    - override /criterion: l1
+    - override /callbacks: noise2noise
+    # - override /scheduler: cyclic
+training:
+    num_epochs: 500

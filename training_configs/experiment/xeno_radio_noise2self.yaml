@@ -1,0 +1,12 @@
+# @package _global_
+logger:
+    project_name: noise2noise
+
+defaults:
+    - override /model: noise2noise
+    - override /dataset: xeno_radio_noise2self
+    - override /criterion: ml1
+    - override /callbacks: noise2noise
+
+training:
+    num_epochs: 500

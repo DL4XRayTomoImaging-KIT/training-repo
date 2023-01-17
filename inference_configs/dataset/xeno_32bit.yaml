@@ -1,0 +1,4 @@
+source:
+  files: '/mnt/data/denoising/xeno/32bit/all_volumes/'
+destination:
+  folder: '/mnt/data/denoising/xeno/32bit/all_volumes_processed/'
