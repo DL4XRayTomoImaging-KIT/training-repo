@@ -1,0 +1,3 @@
+# @package _group_
+checkpoint_addr: '/home/ws/er5241/logs/medaka-supervised/2021-09-10_15-08-52/logdir/checkpoints/best.pth'
+checkpoint_key: 'model_state_dict'
