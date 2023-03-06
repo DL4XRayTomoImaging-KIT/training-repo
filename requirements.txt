@@ -3,11 +3,11 @@ tqdm
 matplotlib
 scikit-learn
 medpy
-torch==1.7.1
+torch==1.12.0
 kornia
 wandb
 catalyst==21.12
-hydra-core==1.0.5
+hydra-core==1.1.1
 scikit-image
 albumentations==0.5.2
 git+https://github.com/MartSlaaf/TVSD
