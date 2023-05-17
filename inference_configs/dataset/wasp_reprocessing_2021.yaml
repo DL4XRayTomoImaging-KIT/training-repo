@@ -1,0 +1,9 @@
+dataset_config:
+  name: AtrociousSliceSampling
+  kwargs: {atro_mask: [False, True, False]}
+    # augmentation: infer_aug_float_atro
+source:
+  files: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2021_07_P23/06-07/Ge_BM/tricho_radio/021H/scan_0011/ffcorr_corr_dead_px2/scan_0011.tif'
+destination:
+  folder: '/mnt/LSDF/projects/code-vita/BM_beamtimes/2021_07_P23/06-07/Ge_BM/tricho_radio/021H/scan_0011/ffcorr_corr_dead_px2/'
+  prefix: 'denoised'
