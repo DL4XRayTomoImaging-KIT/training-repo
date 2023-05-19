@@ -1,0 +1,5 @@
+# @package _group_
+source:
+  files: '${hydra:runtime.cwd}/../tmp_data'
+destination:
+  prefix: 'segmented'
