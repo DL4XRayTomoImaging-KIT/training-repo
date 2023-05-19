@@ -3,8 +3,12 @@ tqdm
 matplotlib
 scikit-learn
 medpy
-torch==1.7.1
-kornia
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.12.1+cu116
+torchvision==0.13.1+cu116 
+kornia==0.5.11
+protobuf==3.19.1
+tensorboard==2.7.0
 wandb
 catalyst==20.11
 hydra-core
@@ -14,6 +18,5 @@ git+https://github.com/MartSlaaf/TVSD
 tifffile
 git+https://github.com/MartSlaaf/SegLoss@packaging
 segmentation-models-pytorch
-torchvision==0.8.2
 einops
 git+https://github.com/MartSlaaf/FileListExpander
